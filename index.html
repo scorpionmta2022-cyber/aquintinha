@@ -1441,7 +1441,7 @@ function updateSummary() {
   const s = document.getElementById('createSummary');
   const cat = CATEGORIES.find(c => c.id === document.getElementById('createCategory').value);
   const deal = document.querySelector('input[name="dealType"]:checked')?.value || 'venda';
-  const hasImage = uploadedImageData || document.getElementById('createImage').value.trim();
+  const hasImage = uploadedImageUrl || document.getElementById('createImage').value.trim();
   s.innerHTML =
     '<p><strong>Categoria:</strong> '+(cat?cat.name:'-')+'</p>' +
     '<p><strong>Titulo:</strong> '+document.getElementById('createTitle').value+'</p>' +
