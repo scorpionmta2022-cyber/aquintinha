@@ -57,7 +57,6 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 </head>
 <body class="bg-creme text-gray-800">
 <div id="notification" class="notification"></div>
@@ -693,7 +692,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // Current Firebase user data (extends auth user with Firestore profile)
 let userProfile = null;
@@ -1411,16 +1409,8 @@ async function submitListing() {
     }
 
     let imageUrl = '';
-    const fileInput = document.getElementById('createImageFile');
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      const storageRef = storage.ref('listings/' + Date.now() + '_' + file.name);
-      const snapshot = await storageRef.put(file);
-      imageUrl = await snapshot.ref.getDownloadURL();
-    } else {
-      const imgArr = IMAGES[cat] || IMAGES.outros;
-      imageUrl = document.getElementById('createImage').value.trim() || imgArr[Math.floor(Math.random() * imgArr.length)];
-    }
+    const imgArr = IMAGES[cat] || IMAGES.outros;
+    imageUrl = document.getElementById('createImage').value.trim() || imgArr[Math.floor(Math.random() * imgArr.length)];
 
     const listingData = {
       title: document.getElementById('createTitle').value.trim(),
