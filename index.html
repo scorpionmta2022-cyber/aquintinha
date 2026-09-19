@@ -1315,49 +1315,47 @@ function openDetail(id) {
 }
 
 }
+function openSeekDetail(id) {
+  const s = seekListings.find(x => String(x.id) === String(id));
+  if (!s) return;
+  const cat = CATEGORIES.find(c => c.id === s.category);
+  const c = document.getElementById('seekDetailContent');
+  c.innerHTML =
+    '<h3 class="text-xl font-bold text-verde-escuro mb-2">'+(cat?cat.name:s.category)+'</h3>' +
+    '<p class="text-sm text-gray-500 mb-3">'+(s.breed?'Raça: '+s.breed:'Qualquer raça')+' &middot; '+s.age+'</p>' +
+    '<div class="flex items-center gap-2 text-sm text-gray-500 mb-3"><i data-lucide="map-pin" class="w-4 h-4"></i> '+s.location+'</p>' +
+    '<div class="mb-3"><h4 class="font-bold text-sm text-verde-escuro mb-1">Descrição</h4><p class="text-sm text-gray-600">'+s.desc+'</p></div>' +
+    (s.price>0?'<p class="text-sm text-gray-500 mb-3">Até '+s.price+' €</p>':'') +
+    '<div class="flex items-center gap-3 mb-4">' +
+    '<div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold">'+s.userName.charAt(0)+'</div>' +
+    '<div><p class="font-semibold text-sm">'+s.userName+'</p></div>' +
+    '</div>' +
+    '<div class="flex gap-3">' +
+    '<button onclick="showPhoneModal(\''+s.userPhone+'\')" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</button>' +
+    '<button onclick="showEmailModal(\''+(s.userEmail||'')+'\')" class="flex-1 bg-amarelo-mostarda text-verde-escuro py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-amarelo-mostarda/90 transition"><i data-lucide="mail" class="w-4 h-4"></i> Email</button>' +
+    '</div>';
+  openModal('seekDetailModal');
+  lucide.createIcons();
+}
+
+function showPhoneModal(phone) {
+  document.getElementById('phoneModalNumber').textContent = phone;
+  openModal('phoneModal');
+}
+function showEmailModal(email) {
+  document.getElementById('emailModalAddress').textContent = email || 'Não disponível';
+  openModal('emailModal');
+}
+function copyPhone() {
+  const phone = document.getElementById('phoneModalNumber').textContent;
+  navigator.clipboard.writeText(phone).then(() => showNotification('Telefone copiado!'));
+}
+function copyEmail() {
+  const email = document.getElementById('emailModalAddress').textContent;
+  navigator.clipboard.writeText(email).then(() => showNotification('Email copiado!'));
+}
+
 function toggleFavorite(id) {
-
-  function openSeekDetail(id) {
-    const s = seekListings.find(x => String(x.id) === String(id));
-    if (!s) return;
-    const cat = CATEGORIES.find(c => c.id === s.category);
-    const c = document.getElementById('seekDetailContent');
-    c.innerHTML =
-      '<h3 class="text-xl font-bold text-verde-escuro mb-2">'+(cat?cat.name:s.category)+'</h3>' +
-      '<p class="text-sm text-gray-500 mb-3">'+(s.breed?'Raça: '+s.breed:'Qualquer raça')+' &middot; '+s.age+'</p>' +
-      '<div class="flex items-center gap-2 text-sm text-gray-500 mb-3"><i data-lucide="map-pin" class="w-4 h-4"></i> '+s.location+'</p>' +
-      '<div class="mb-3"><h4 class="font-bold text-sm text-verde-escuro mb-1">Descrição</h4><p class="text-sm text-gray-600">'+s.desc+'</p></div>' +
-      (s.price>0?'<p class="text-sm text-gray-500 mb-3">Até '+s.price+' €</p>':'') +
-      '<div class="flex items-center gap-3 mb-4">' +
-      '<div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold">'+s.userName.charAt(0)+'</div>' +
-      '<div><p class="font-semibold text-sm">'+s.userName+'</p></div>' +
-      '</div>' +
-      '<div class="flex gap-3">' +
-      '<button onclick="showPhoneModal(\''+s.userPhone+'\')" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</button>' +
-      '<button onclick="showEmailModal(\''+(s.userEmail||'')+'\')" class="flex-1 bg-amarelo-mostarda text-verde-escuro py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-amarelo-mostarda/90 transition"><i data-lucide="mail" class="w-4 h-4"></i> Email</button>' +
-      '</div>';
-    openModal('seekDetailModal');
-    lucide.createIcons();
-  }
-
-  function showPhoneModal(phone) {
-    document.getElementById('phoneModalNumber').textContent = phone;
-    openModal('phoneModal');
-  }
-  function showEmailModal(email) {
-    document.getElementById('emailModalAddress').textContent = email || 'Não disponível';
-    openModal('emailModal');
-  }
-  function copyPhone() {
-    const phone = document.getElementById('phoneModalNumber').textContent;
-    navigator.clipboard.writeText(phone).then(() => showNotification('Telefone copiado!'));
-  }
-  function copyEmail() {
-    const email = document.getElementById('emailModalAddress').textContent;
-    navigator.clipboard.writeText(email).then(() => showNotification('Email copiado!'));
-  }
-
-  function toggleFavorite(id) {
   if (!currentUser) { openModal('authModal'); showNotification('Faça login para guardar favoritos.', 'error'); return; }
   const idx = favorites.indexOf(id);
   if (idx > -1) { favorites.splice(idx, 1); showNotification('Removido dos favoritos.'); }
