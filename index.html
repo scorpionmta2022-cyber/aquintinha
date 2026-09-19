@@ -1808,7 +1808,7 @@ async function renderBanners() {
       const zoneBanners = all.filter(b => b.position === zone);
       if (zoneBanners.length === 0) { el.innerHTML = ''; return; }
       el.innerHTML = zoneBanners.map(b =>
-        '<a href="' + (b.url || '#') + '" target="_blank" class="block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition my-2">' +
+        '<a href="' + (b.url && !b.url.startsWith('http') ? 'https://' + b.url : (b.url || '#')) + '" target="_blank" class="block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition my-2">' +
         '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto max-h-48 object-cover">' +
         '</a>'
       ).join('');
