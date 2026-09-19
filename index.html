@@ -45,13 +45,25 @@ tailwind.config={theme:{extend:{colors:{verde:{escuro:'#0B3C26',medio:'#1A5C3A',
 .category-card{background:#0B3C26;border:2px solid #F4C430;border-radius:12px;transition:transform .2s,box-shadow .2s}.category-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(11,60,38,.3)}
 .listing-image{aspect-ratio:4/3;object-fit:cover}
 input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C430}
+.admin-tab{position:relative;transition:all .2s}
 .admin-tab.active{background:#0B3C26;color:#FDFBF7}
+.admin-tab::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#F4C430;transform:scaleX(0);transition:transform .2s}
+.admin-tab.active::after{transform:scaleX(1)}
+.admin-panel{display:none}.admin-panel:not(.hide){display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.tab-btn{position:relative}
+.tab-btn.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#F4C430}
 .notification{position:fixed;top:80px;right:20px;z-index:9999;padding:12px 24px;border-radius:8px;font-weight:500;transform:translateX(120%);transition:transform .3s}
 .notification.show{transform:translateX(0)}
 .notification.success{background:#0B3C26;color:#FDFBF7}
 .notification.error{background:#DC2626;color:#fff}
 .favorite-btn.active svg{fill:#F4C430;color:#F4C430}
 .mobile-nav-link{display:block;color:#FDFBF7;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.15);font-weight:500}
+.page{display:none}.page.active{display:block;animation:fadeIn .3s}
+.modal-overlay{opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal-content{transform:translateY(20px);transition:transform .3s}
+.modal-overlay.active .modal-content{transform:translateY(0)}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
