@@ -82,6 +82,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <button onclick="requireAuth('createModal')" class="hidden sm:flex btn-primary px-4 py-2 rounded-full text-sm items-center gap-1">
 <i data-lucide="plus" class="w-4 h-4"></i><span>Vender animal</span>
 </button>
+<button onclick="requireAuth('createModal')" class="hidden sm:flex border-2 border-amarelo-mostarda text-amarelo-mostarda px-4 py-2 rounded-full text-sm items-center gap-1 hover:bg-amarelo-mostarda hover:text-verde-escuro transition">
+<i data-lucide="heart" class="w-4 h-4"></i><span>Adoção</span>
+</button>
 <button onclick="navigateTo('listings')" class="hidden sm:flex bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full text-sm items-center gap-1 transition">
 <i data-lucide="shopping-bag" class="w-4 h-4"></i><span>Comprar animal</span>
 </button>
@@ -121,6 +124,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <a href="#" class="mobile-nav-link" onclick="navigateTo('how');toggleMobileMenu();return false">Como funciona</a>
 <a href="#" class="mobile-nav-link" onclick="navigateTo('contacts');toggleMobileMenu();return false">Contactos</a>
 <button onclick="requireAuth('createModal');toggleMobileMenu()" class="w-full mt-3 btn-primary px-4 py-2 rounded-full text-sm">+ Vender animal</button>
+<button onclick="requireAuth('createModal');toggleMobileMenu()" class="w-full mt-2 bg-amarelo-mostarda text-verde-escuro px-4 py-2 rounded-full text-sm font-semibold">Adoção</button>
 <button onclick="navigateTo('listings');toggleMobileMenu()" class="w-full mt-2 bg-white/10 text-white border border-white/30 px-4 py-2 rounded-full text-sm"> Comprar animal</button>
 <button onclick="requireAuth('seekModal');toggleMobileMenu()" class="w-full mt-2 bg-white/10 text-white border border-white/30 px-4 py-2 rounded-full text-sm">+ Procuro animal</button>
 </div>
@@ -142,6 +146,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 </button>
 <button onclick="requireAuth('createModal')" class="border-2 border-amarelo-mostarda text-amarelo-mostarda px-7 py-3 rounded-full text-sm font-semibold hover:bg-amarelo-mostarda hover:text-verde-escuro transition flex items-center gap-2">
 <i data-lucide="plus" class="w-5 h-5"></i> <span data-i18n="hero_btn2">Quero vender</span>
+</button>
+<button onclick="requireAuth('createModal')" class="bg-amarelo-mostarda text-verde-escuro px-7 py-3 rounded-full text-sm font-semibold hover:bg-amarelo-mostarda/90 transition flex items-center gap-2">
+<i data-lucide="heart" class="w-5 h-5"></i> Adoção
 </button>
 <button onclick="navigateTo('listings')" class="border-2 border-white text-white px-7 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-verde-escuro transition flex items-center gap-2">
 <i data-lucide="shopping-bag" class="w-5 h-5"></i> Quero comprar
@@ -165,21 +172,21 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <section class="py-10 bg-creme-escuro full-width-section">
 <div class="max-w-7xl mx-auto px-4">
 <div class="bg-white rounded-2xl shadow-md p-4 md:p-6">
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-<input type="text" id="filterSearch" placeholder="Procurar animais..." data-i18n-placeholder="filter_search" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
-<select id="filterCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+<input type="text" id="filterSearch" placeholder="Procurar animais..." data-i18n-placeholder="filter_search" class="border border-gray-300 rounded-lg px-4 py-3 text-base w-full">
+<select id="filterCategory" class="border border-gray-300 rounded-lg px-4 py-3 text-base w-full">
 <option value="">Todas as categorias</option>
 </select>
-<select id="filterLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="filterLocation" class="border border-gray-300 rounded-lg px-4 py-3 text-base w-full">
 <option value="">Todos os locais</option>
 </select>
-<select id="filterDeal" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="filterDeal" class="border border-gray-300 rounded-lg px-4 py-3 text-base w-full">
 <option value="">Venda e Troca</option>
 <option value="venda">Venda</option>
 <option value="troca">Troca</option>
 </select>
-<button onclick="applyFilters()" class="btn-green px-6 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
-<i data-lucide="search" class="w-4 h-4"></i> Procurar
+<button onclick="applyFilters()" class="btn-green px-6 py-3 rounded-lg text-base font-medium flex items-center justify-center gap-2">
+<i data-lucide="search" class="w-5 h-5"></i> Procurar
 </button>
 </div>
 </div>
@@ -429,6 +436,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-6">Painel Admin</h1>
 <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
 <button onclick="showAdminTab('adminListings')" class="admin-tab active px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Anuncios</button>
+<button onclick="showAdminTab('adminSeekings')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Procuro</button>
 <button onclick="showAdminTab('adminUsers')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Utilizadores</button>
 <button onclick="showAdminTab('adminBanners')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Banners</button>
 <button onclick="showAdminTab('adminPages')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Paginas</button>
@@ -439,6 +447,14 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <table class="w-full text-sm text-left">
 <thead class="bg-verde-escuro text-creme"><tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Titulo</th><th class="px-4 py-3">Categoria</th><th class="px-4 py-3">Preco</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3">Acoes</th></tr></thead>
 <tbody id="adminListingsTable"></tbody>
+</table>
+</div>
+</div>
+<div id="adminSeekings" class="admin-panel hide">
+<div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-verde-escuro text-creme"><tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Categoria</th><th class="px-4 py-3">Raça</th><th class="px-4 py-3">Local</th><th class="px-4 py-3">Utilizador</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3">Acoes</th></tr></thead>
+<tbody id="adminSeekingsTable"></tbody>
 </table>
 </div>
 </div>
@@ -464,8 +480,18 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <div><label class="text-sm font-medium">Sobre Nos</label><textarea id="pageAbout" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
 <div><label class="text-sm font-medium">Termos e Condicoes</label><textarea id="pageTerms" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
 <div><label class="text-sm font-medium">Politica de Privacidade</label><textarea id="pagePrivacy" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
-<button onclick="savePages()" class="btn-green px-6 py-2.5 rounded-lg text-sm mt-4">Guardar Alteracoes</button>
 </div>
+<h3 class="font-bold text-verde-escuro mb-4 mt-6 border-t pt-4">Contactos do Site</h3>
+<div class="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+<div><label class="text-sm font-medium">Email Geral</label><input type="email" id="contactEmail" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="geral@aquintinha.pt"></div>
+<div><label class="text-sm font-medium">Telefone</label><input type="tel" id="contactPhone" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="+351 XXX XXX XXX"></div>
+<div><label class="text-sm font-medium">Morada</label><input type="text" id="contactAddress" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 md:col-span-2" placeholder="Rua Exemplo, 123, Lisboa"></div>
+<div><label class="text-sm font-medium">Horario</label><input type="text" id="contactHours" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="Seg-Sex 9h-18h"></div>
+<div><label class="text-sm font-medium">Facebook</label><input type="url" id="contactFacebook" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="https://facebook.com/aquintinha"></div>
+<div><label class="text-sm font-medium">Instagram</label><input type="url" id="contactInstagram" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="https://instagram.com/aquintinha"></div>
+<div><label class="text-sm font-medium">TikTok</label><input type="url" id="contactTikTok" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" placeholder="https://tiktok.com/@aquintinha"></div>
+</div>
+<button onclick="savePages()" class="btn-green px-6 py-2.5 rounded-lg text-sm mt-4">Guardar Alteracoes</button>
 </div>
 </div>
 </div>
@@ -753,6 +779,14 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <p class="text-gray-500 mb-4">Clique no email para copiar</p>
 <div id="emailModalAddress" class="text-lg font-bold text-amarelo-mostarda mb-4 break-all cursor-pointer bg-creme-escuro px-4 py-3 rounded-lg" onclick="copyEmail()"></div>
 <p class="text-xs text-gray-400">Copiado para a área de transferência!</p>
+</div>
+</div>
+
+<!-- SEEK DETAIL MODAL -->
+<div id="seekDetailModal" class="modal-overlay fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('seekDetailModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-md p-6 relative">
+<button onclick="closeModal('seekDetailModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<div id="seekDetailContent"></div>
 </div>
 </div>
 
@@ -1280,7 +1314,50 @@ function openDetail(id) {
   lucide.createIcons();
 }
 
+}
 function toggleFavorite(id) {
+
+  function openSeekDetail(id) {
+    const s = seekListings.find(x => String(x.id) === String(id));
+    if (!s) return;
+    const cat = CATEGORIES.find(c => c.id === s.category);
+    const c = document.getElementById('seekDetailContent');
+    c.innerHTML =
+      '<h3 class="text-xl font-bold text-verde-escuro mb-2">'+(cat?cat.name:s.category)+'</h3>' +
+      '<p class="text-sm text-gray-500 mb-3">'+(s.breed?'Raça: '+s.breed:'Qualquer raça')+' &middot; '+s.age+'</p>' +
+      '<div class="flex items-center gap-2 text-sm text-gray-500 mb-3"><i data-lucide="map-pin" class="w-4 h-4"></i> '+s.location+'</p>' +
+      '<div class="mb-3"><h4 class="font-bold text-sm text-verde-escuro mb-1">Descrição</h4><p class="text-sm text-gray-600">'+s.desc+'</p></div>' +
+      (s.price>0?'<p class="text-sm text-gray-500 mb-3">Até '+s.price+' €</p>':'') +
+      '<div class="flex items-center gap-3 mb-4">' +
+      '<div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold">'+s.userName.charAt(0)+'</div>' +
+      '<div><p class="font-semibold text-sm">'+s.userName+'</p></div>' +
+      '</div>' +
+      '<div class="flex gap-3">' +
+      '<button onclick="showPhoneModal(\''+s.userPhone+'\')" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</button>' +
+      '<button onclick="showEmailModal(\''+(s.userEmail||'')+'\')" class="flex-1 bg-amarelo-mostarda text-verde-escuro py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-amarelo-mostarda/90 transition"><i data-lucide="mail" class="w-4 h-4"></i> Email</button>' +
+      '</div>';
+    openModal('seekDetailModal');
+    lucide.createIcons();
+  }
+
+  function showPhoneModal(phone) {
+    document.getElementById('phoneModalNumber').textContent = phone;
+    openModal('phoneModal');
+  }
+  function showEmailModal(email) {
+    document.getElementById('emailModalAddress').textContent = email || 'Não disponível';
+    openModal('emailModal');
+  }
+  function copyPhone() {
+    const phone = document.getElementById('phoneModalNumber').textContent;
+    navigator.clipboard.writeText(phone).then(() => showNotification('Telefone copiado!'));
+  }
+  function copyEmail() {
+    const email = document.getElementById('emailModalAddress').textContent;
+    navigator.clipboard.writeText(email).then(() => showNotification('Email copiado!'));
+  }
+
+  function toggleFavorite(id) {
   if (!currentUser) { openModal('authModal'); showNotification('Faça login para guardar favoritos.', 'error'); return; }
   const idx = favorites.indexOf(id);
   if (idx > -1) { favorites.splice(idx, 1); showNotification('Removido dos favoritos.'); }
@@ -1958,7 +2035,7 @@ function applySeekFilters() {
 
 function renderSeekCard(s) {
   const cat = CATEGORIES.find(c => c.id === s.category);
-  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover border-l-4 border-amarelo-mostarda">' +
+  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover border-l-4 border-amarelo-mostarda cursor-pointer" onclick="openSeekDetail(\''+s.id+'\')">' +
     '<div class="p-4">' +
     '<div class="flex items-center gap-2 mb-2">' +
     '<span class="text-2xl">'+(cat?cat.emoji:'🔍')+'</span>' +
@@ -1973,7 +2050,7 @@ function renderSeekCard(s) {
     '<div class="w-7 h-7 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold text-xs">'+s.userName.charAt(0)+'</div>' +
     '<span class="text-xs text-gray-500">'+s.userName+'</span>' +
     '</div>' +
-    '<a href="tel:'+s.userPhone+'" class="w-full btn-green py-2 rounded-lg text-xs flex items-center justify-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> Contactar</a>' +
+    '<button class="w-full btn-green py-2 rounded-lg text-xs flex items-center justify-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> Ver detalhes</button>' +
     '</div></div>';
 }
 
