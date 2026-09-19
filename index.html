@@ -82,6 +82,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <button onclick="requireAuth('createModal')" class="hidden sm:flex btn-primary px-4 py-2 rounded-full text-sm items-center gap-1">
 <i data-lucide="plus" class="w-4 h-4"></i><span>Vender animal</span>
 </button>
+<button onclick="navigateTo('listings')" class="hidden sm:flex bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full text-sm items-center gap-1 transition">
+<i data-lucide="shopping-bag" class="w-4 h-4"></i><span>Comprar animal</span>
+</button>
 <button onclick="requireAuth('seekModal')" class="hidden sm:flex bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full text-sm items-center gap-1 transition">
 <i data-lucide="search" class="w-4 h-4"></i><span>Procuro animal</span>
 </button>
@@ -118,6 +121,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <a href="#" class="mobile-nav-link" onclick="navigateTo('how');toggleMobileMenu();return false">Como funciona</a>
 <a href="#" class="mobile-nav-link" onclick="navigateTo('contacts');toggleMobileMenu();return false">Contactos</a>
 <button onclick="requireAuth('createModal');toggleMobileMenu()" class="w-full mt-3 btn-primary px-4 py-2 rounded-full text-sm">+ Vender animal</button>
+<button onclick="navigateTo('listings');toggleMobileMenu()" class="w-full mt-2 bg-white/10 text-white border border-white/30 px-4 py-2 rounded-full text-sm"> Comprar animal</button>
 <button onclick="requireAuth('seekModal');toggleMobileMenu()" class="w-full mt-2 bg-white/10 text-white border border-white/30 px-4 py-2 rounded-full text-sm">+ Procuro animal</button>
 </div>
 </div>
@@ -139,6 +143,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <button onclick="requireAuth('createModal')" class="border-2 border-amarelo-mostarda text-amarelo-mostarda px-7 py-3 rounded-full text-sm font-semibold hover:bg-amarelo-mostarda hover:text-verde-escuro transition flex items-center gap-2">
 <i data-lucide="plus" class="w-5 h-5"></i> <span data-i18n="hero_btn2">Quero vender</span>
 </button>
+<button onclick="navigateTo('listings')" class="border-2 border-white text-white px-7 py-3 rounded-full text-sm font-semibold hover:bg-white hover:text-verde-escuro transition flex items-center gap-2">
+<i data-lucide="shopping-bag" class="w-5 h-5"></i> Quero comprar
+</button>
 </div>
 </div>
 </div>
@@ -151,6 +158,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <p class="font-caveat text-amarelo-mostarda text-2xl mt-1">Encontre o que procura</p>
 </div>
 <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4" id="categoriesGrid"></div>
+<div id="bannerHomeCategories" class="max-w-7xl mx-auto px-4 py-4"></div>
 </div>
 </section>
 
@@ -185,6 +193,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <p class="font-caveat text-amarelo-mostarda text-xl mt-1">Os melhores para si</p>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="homeListings"></div>
+<div id="bannerHomeListings" class="max-w-7xl mx-auto px-4 py-4"></div>
 </div>
 </section>
 
@@ -198,6 +207,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <a href="#" onclick="navigateTo('seeking');return false" class="btn-green px-4 py-2 rounded-lg text-sm flex items-center gap-1">Ver todos</a>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="homeSeeking"></div>
+<div id="bannerHomeSeeking" class="max-w-7xl mx-auto px-4 py-4"></div>
 </div>
 </section>
 
@@ -503,9 +513,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <div class="flex flex-wrap justify-between items-center text-xs text-creme/50">
 <p>&copy; 2025 A Quintinha. Todos os direitos reservados.</p>
 <div class="flex gap-4">
-<a href="#" class="hover:text-amarelo-mostarda">Termos</a>
-<a href="#" class="hover:text-amarelo-mostarda">Privacidade</a>
-<a href="#" class="hover:text-amarelo-mostarda">Cookies</a>
+<a href="#" onclick="showPage('terms');return false" class="hover:text-amarelo-mostarda">Termos</a>
+<a href="#" onclick="showPage('privacy');return false" class="hover:text-amarelo-mostarda">Privacidade</a>
+<a href="#" onclick="showPage('about');return false" class="hover:text-amarelo-mostarda">Sobre Nos</a>
 </div>
 </div>
 </div>
@@ -675,6 +685,45 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <button onclick="submitSeek()" class="btn-primary px-6 py-2 rounded-lg text-sm">Publicar Pedido</button>
 </div>
 </div>
+</div>
+</div>
+
+<div id="bannerModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('bannerModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-lg p-6 relative">
+<button onclick="closeModal('bannerModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
+<h2 class="text-lg font-bold text-verde-escuro mb-4">Novo Banner</h2>
+<div class="space-y-3">
+<div><label class="text-sm font-medium">Nome interno</label><input type="text" id="bannerTitle" placeholder="Ex: Banner Principal" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">URL da imagem</label><input type="url" id="bannerImage" placeholder="https://exemplo.com/imagen.jpg" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Link de destino</label><input type="url" id="bannerUrl" placeholder="https://..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Texto alternativo</label><input type="text" id="bannerAlt" placeholder="Descricao da imagem" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div class="grid grid-cols-2 gap-3">
+<div><label class="text-sm font-medium">Posicao</label>
+<select id="bannerPosition" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1">
+<option value="home_categories">Apos Categorias</option>
+<option value="home_listings">Apos Anuncios</option>
+<option value="home_seeking">Apos Quem Procura</option>
+</select></div>
+<div><label class="text-sm font-medium">Estado</label>
+<select id="bannerActive" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1">
+<option value="true">Ativo</option>
+<option value="false">Inativo</option>
+</select></div>
+</div>
+</div>
+<div class="flex justify-end gap-3 mt-6">
+<button onclick="closeModal('bannerModal')" class="border border-gray-300 px-6 py-2 rounded-lg text-sm">Cancelar</button>
+<button onclick="submitBanner()" class="btn-primary px-6 py-2 rounded-lg text-sm">Guardar</button>
+</div>
+</div>
+</div>
+
+<!-- PAGE MODAL -->
+<div id="pageModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('pageModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-2xl p-6 relative max-h-[80vh] overflow-y-auto">
+<button onclick="closeModal('pageModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
+<h2 id="pageModalTitle" class="text-xl font-bold text-verde-escuro mb-4"></h2>
+<div id="pageModalContent" class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap"></div>
 </div>
 </div>
 
@@ -1149,24 +1198,25 @@ async function renderHomeListings() {
 function renderListingCard(l) {
   const isFav = favorites.includes(l.id);
   const cat = CATEGORIES.find(c => c.id === l.category);
-  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover cursor-pointer">' +
+  const id = l.id;
+  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover cursor-pointer" onclick="openDetail(\''+id+'\')">' +
     '<div class="relative listing-image bg-gray-200">' +
-    '<img src="'+l.image+'" alt="'+l.title+'" class="w-full h-full object-cover" onerror="this.style.display=\'none\'">' +
-    '<button onclick="event.stopPropagation();toggleFavorite('+l.id+')" class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition '+(isFav?'active':'')+'"><i data-lucide="heart" class="w-4 h-4"></i></button>' +
+    '<img src="'+l.image+'" alt="'+l.title+'" class="w-full h-full object-cover" onerror="this.src=\'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop\'">' +
+    '<button onclick="event.stopPropagation();toggleFavorite(\''+id+'\')" class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition '+(isFav?'active':'')+'"><i data-lucide="heart" class="w-4 h-4"></i></button>' +
     (l.deal==='troca'?'<span class="absolute top-3 left-3 bg-amarelo-mostarda text-verde-escuro text-xs font-bold px-2 py-0.5 rounded-full">TROCA</span>':'') +
     (l.adoptions?'<span class="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">ADOCAO</span>':'') +
     '</div>' +
     '<div class="p-4">' +
     '<h3 class="font-bold text-sm text-verde-escuro mb-1 line-clamp-1">'+l.title+'</h3>' +
-    '<p class="text-xs text-gray-500 mb-1">'+l.breed+' &middot; '+l.age+'</p>' +
-    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i data-lucide="map-pin" class="w-3 h-3"></i> '+l.location+'</div>' +
-    '<p class="font-bold text-amarelo-escuro text-sm mb-3">'+(l.price===0?'Gratis':l.price+' / '+l.unit)+'</p>' +
-    '<button onclick="event.stopPropagation();openDetail('+l.id+')" class="w-full btn-green py-2 rounded-lg text-xs">Ver anuncio</button>' +
+    '<p class="text-xs text-gray-500 mb-1">'+(l.breed||'N/D')+' &middot; '+(l.age||'N/D')+'</p>' +
+    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i data-lucide="map-pin" class="w-3 h-3"></i> '+(l.location||'')+'</div>' +
+    '<p class="font-bold text-amarelo-escuro text-sm mb-3">'+(l.price===0||!l.price?'Gratis':l.price+' / '+(l.unit||'unidade'))+'</p>' +
+    '<button onclick="event.stopPropagation();openDetail(\''+id+'\')" class="w-full btn-green py-2 rounded-lg text-xs">Ver anuncio</button>' +
     '</div></div>';
 }
 
 function openDetail(id) {
-  const l = listings.find(x => x.id === id);
+  const l = listings.find(x => String(x.id) === String(id));
   if (!l) return;
   const isFav = favorites.includes(l.id);
   const cat = CATEGORIES.find(c => c.id === l.category);
@@ -1678,12 +1728,45 @@ async function toggleUserRole(uid) {
 }
 
 function addBanner() {
-  const title = prompt('Nome do banner:');
-  if (!title) return;
-  const url = prompt('URL de destino:');
-  db.collection('banners').add({title, url: url || '#', active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
-    .then(() => { renderAdmin(); showNotification('Banner adicionado!'); })
-    .catch(e => showNotification('Erro ao adicionar banner.', 'error'));
+  ['bannerTitle','bannerImage','bannerUrl','bannerAlt'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('bannerPosition').value = 'home_categories';
+  document.getElementById('bannerActive').value = 'true';
+  openModal('bannerModal');
+}
+async function submitBanner() {
+  const title = document.getElementById('bannerTitle').value.trim();
+  const image = document.getElementById('bannerImage').value.trim();
+  const url = document.getElementById('bannerUrl').value.trim();
+  const alt = document.getElementById('bannerAlt').value.trim();
+  const position = document.getElementById('bannerPosition').value;
+  const active = document.getElementById('bannerActive').value === 'true';
+  if (!title || !image) { showNotification('Preencha nome e imagem.', 'error'); return; }
+  try {
+    await db.collection('banners').add({ title, image, url: url || '#', alt, position, active, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    closeModal('bannerModal');
+    showNotification('Banner criado!');
+    renderAdmin();
+    renderBanners();
+  } catch(e) { showNotification('Erro ao criar banner.', 'error'); }
+}
+async function renderBanners() {
+  try {
+    const snap = await db.collection('banners').where('active', '==', true).get();
+    const all = [];
+    snap.forEach(doc => all.push({id: doc.id, ...doc.data()}));
+    const containers = { home_categories: 'bannerHomeCategories', home_listings: 'bannerHomeListings', home_seeking: 'bannerHomeSeeking' };
+    Object.keys(containers).forEach(zone => {
+      const el = document.getElementById(containers[zone]);
+      if (!el) return;
+      const zoneBanners = all.filter(b => b.position === zone);
+      if (zoneBanners.length === 0) { el.innerHTML = ''; return; }
+      el.innerHTML = zoneBanners.map(b =>
+        '<a href="' + (b.url || '#') + '" target="_blank" class="block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition my-2">' +
+        '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto max-h-48 object-cover">' +
+        '</a>'
+      ).join('');
+    });
+  } catch(e) { console.error('Banner error:', e); }
 }
 function toggleBanner(id) {
   db.collection('banners').doc(id).get().then(doc => {
@@ -1696,33 +1779,68 @@ function deleteBanner(id) {
   if (!confirm('Eliminar banner?')) return;
   db.collection('banners').doc(id).delete().then(() => renderAdmin());
 }
-function savePages() {
+async function savePages() {
   const about = document.getElementById('pageAbout')?.value || '';
   const terms = document.getElementById('pageTerms')?.value || '';
   const privacy = document.getElementById('pagePrivacy')?.value || '';
-  localStorage.setItem('aq_pages', JSON.stringify({about, terms, privacy}));
-  showNotification('Paginas guardadas!');
+  try {
+    await db.collection('pages').doc('about').set({ slug: 'about', title: 'Sobre Nos', content: about, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('pages').doc('terms').set({ slug: 'terms', title: 'Termos e Condicoes', content: terms, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await db.collection('pages').doc('privacy').set({ slug: 'privacy', title: 'Politica de Privacidade', content: privacy, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    showNotification('Paginas guardadas!');
+  } catch(e) { showNotification('Erro ao guardar paginas.', 'error'); }
 }
 
-function renderBannerList() {
+async function showPage(slug) {
+  const titles = { about: 'Sobre Nos', terms: 'Termos e Condicoes', privacy: 'Politica de Privacidade' };
+  try {
+    const doc = await db.collection('pages').doc(slug).get();
+    document.getElementById('pageModalTitle').textContent = titles[slug] || slug;
+    document.getElementById('pageModalContent').innerHTML = doc.exists && doc.data().content
+      ? doc.data().content.replace(/\n/g, '<br>')
+      : '<p class="text-gray-400">Pagina ainda nao configurada.</p>';
+    openModal('pageModal');
+  } catch(e) {
+    document.getElementById('pageModalTitle').textContent = titles[slug] || slug;
+    document.getElementById('pageModalContent').innerHTML = '<p class="text-gray-400">Pagina ainda nao configurada.</p>';
+    openModal('pageModal');
+  }
+}
+
+async function loadAdminPages() {
+  try {
+    const snap = await db.collection('pages').get();
+    snap.forEach(doc => {
+      const data = doc.data();
+      const el = document.getElementById('page' + doc.id.charAt(0).toUpperCase() + doc.id.slice(1));
+      if (el && data.content) el.value = data.content;
+    });
+  } catch(e) {}
+}
+
+async function renderBannerList() {
   const bl = document.getElementById('bannerList');
   if (!bl) return;
-  db.collection('banners').get().then(snap => {
+  try {
+    const snap = await db.collection('banners').get();
     const items = [];
     snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
     if (items.length === 0) {
       bl.innerHTML = '<p class="text-gray-400 text-sm">Nenhum banner criado.</p>';
     } else {
-      bl.innerHTML = items.map(b => '<div class="border rounded-lg p-3 flex justify-between items-center">' +
-        '<div><span class="text-sm font-medium">' + b.title + '</span><p class="text-xs text-gray-400">' + b.url + '</p></div>' +
-        '<div class="flex gap-2">' +
+      bl.innerHTML = items.map(b =>
+        '<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">' +
+        (b.image ? '<img src="' + b.image + '" class="w-16 h-10 object-cover rounded">' : '<div class="w-16 h-10 bg-gray-200 rounded"></div>') +
+        '<div class="flex-1 min-w-0">' +
+        '<p class="font-medium text-sm truncate">' + b.title + '</p>' +
+        '<p class="text-xs text-gray-400">' + (b.position || '') + '</p>' +
+        '</div>' +
         '<button onclick="toggleBanner(\'' + b.id + '\')" class="text-xs ' + (b.active ? 'text-green-600' : 'text-gray-400') + ' hover:underline">' + (b.active ? 'Ativo' : 'Inativo') + '</button>' +
         '<button onclick="deleteBanner(\'' + b.id + '\')" class="text-xs text-red-600 hover:underline">Apagar</button>' +
-        '</div></div>').join('');
+        '</div>'
+      ).join('');
     }
-  }).catch(() => {
-    bl.innerHTML = '<p class="text-red-500 text-sm">Erro ao carregar banners.</p>';
-  });
+  } catch(e) { bl.innerHTML = '<p class="text-red-500 text-sm">Erro ao carregar.</p>'; }
 }
 
 // SEEKING
@@ -1928,6 +2046,7 @@ function changePassword() {
 document.addEventListener('DOMContentLoaded', function() {
   renderCategories();
   renderFilterOptions();
+  renderBanners();
   lucide.createIcons();
 
   // Firebase auth state listener
@@ -1977,10 +2096,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-  const savedPages = JSON.parse(localStorage.getItem('aq_pages') || '{}');
-  if (savedPages.about) { const el = document.getElementById('pageAbout'); if(el) el.value = savedPages.about; }
-  if (savedPages.terms) { const el = document.getElementById('pageTerms'); if(el) el.value = savedPages.terms; }
-  if (savedPages.privacy) { const el = document.getElementById('pagePrivacy'); if(el) el.value = savedPages.privacy; }
+  loadAdminPages();
 });
 </script>
 </body>
