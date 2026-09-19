@@ -1310,10 +1310,8 @@ function openDetail(id) {
     '</div>' +
     '<button onclick="reportListing(\''+l.id+'\')" class="w-full mt-3 text-xs text-gray-400 hover:text-red-500 transition">Reportar anuncio</button>' +
     '</div></div>';
-  openModal('detailModal');
+openModal('detailModal');
   lucide.createIcons();
-}
-
 }
 function openSeekDetail(id) {
   const s = seekListings.find(x => String(x.id) === String(id));
