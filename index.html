@@ -127,9 +127,6 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 </div>
 
 <main id="mainContent">
-<div class="flex">
-<div id="bannerSidebarLeft" class="w-48 hidden lg:block px-2 py-4"></div>
-<div class="flex-1 min-w-0">
 
 <!-- HOME PAGE -->
 <section id="pageHome" class="page active">
@@ -472,8 +469,6 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 </div>
 </div>
 </div>
-<div id="bannerSidebarRight" class="w-48 hidden lg:block px-2 py-4"></div>
-</div>
 </section>
 </main>
 
@@ -713,8 +708,6 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <option value="home_categories">Apos Categorias</option>
 <option value="home_listings">Apos Anuncios</option>
 <option value="home_seeking">Apos Quem Procura</option>
-<option value="sidebar_left">Lateral Esquerda</option>
-<option value="sidebar_right">Lateral Direita</option>
 </select></div>
 <div><label class="text-sm font-medium">Estado</label>
 <select id="bannerActive" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1">
@@ -736,6 +729,30 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <button onclick="closeModal('pageModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
 <h2 id="pageModalTitle" class="text-xl font-bold text-verde-escuro mb-4"></h2>
 <div id="pageModalContent" class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap"></div>
+</div>
+</div>
+
+<!-- PHONE MODAL -->
+<div id="phoneModal" class="modal-overlay fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('phoneModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-md p-6 relative text-center">
+<button onclick="closeModal('phoneModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<i data-lucide="phone" class="w-12 h-12 text-verde-escuro mx-auto mb-3"></i>
+<h3 class="font-bold text-verde-escuro mb-2">Telefone do anunciante</h3>
+<p class="text-gray-500 mb-4">Clique no número para copiar</p>
+<div id="phoneModalNumber" class="text-2xl font-bold text-verde-escuro mb-4 break-all cursor-pointer bg-creme-escuro px-4 py-3 rounded-lg" onclick="copyPhone()"></div>
+<p class="text-xs text-gray-400">Copiado para a área de transferência!</p>
+</div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div id="emailModal" class="modal-overlay fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('emailModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-md p-6 relative text-center">
+<button onclick="closeModal('emailModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<i data-lucide="mail" class="w-12 h-12 text-amarelo-mostarda mx-auto mb-3"></i>
+<h3 class="font-bold text-verde-escuro mb-2">Email do anunciante</h3>
+<p class="text-gray-500 mb-4">Clique no email para copiar</p>
+<div id="emailModalAddress" class="text-lg font-bold text-amarelo-mostarda mb-4 break-all cursor-pointer bg-creme-escuro px-4 py-3 rounded-lg" onclick="copyEmail()"></div>
+<p class="text-xs text-gray-400">Copiado para a área de transferência!</p>
 </div>
 </div>
 
@@ -1254,10 +1271,10 @@ function openDetail(id) {
     '<div><p class="font-semibold text-sm">'+l.userName+'</p><p class="text-xs text-gray-500">'+l.userPhone+'</p></div>' +
     '</div>' +
     '<div class="flex gap-3">' +
-    '<a href="tel:'+l.userPhone+'" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</a>' +
-    '<a href="https://wa.me/'+l.userPhone.replace(/[^0-9]/g,'')+'" target="_blank" class="flex-1 bg-green-500 text-white py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-green-600 transition"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>' +
+    '<button onclick="showPhoneModal(\''+l.userPhone+'\')" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</button>' +
+    '<button onclick="showEmailModal(\''+(l.userEmail||'')+'\')" class="flex-1 bg-amarelo-mostarda text-verde-escuro py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-amarelo-mostarda/90 transition"><i data-lucide="mail" class="w-4 h-4"></i> Email</button>' +
     '</div>' +
-    '<button onclick="reportListing('+l.id+')" class="w-full mt-3 text-xs text-gray-400 hover:text-red-500 transition">Reportar anuncio</button>' +
+    '<button onclick="reportListing(\''+l.id+'\')" class="w-full mt-3 text-xs text-gray-400 hover:text-red-500 transition">Reportar anuncio</button>' +
     '</div></div>';
   openModal('detailModal');
   lucide.createIcons();
@@ -1811,9 +1828,7 @@ async function renderBanners() {
     const containers = { 
       home_categories: 'bannerHomeCategories', 
       home_listings: 'bannerHomeListings', 
-      home_seeking: 'bannerHomeSeeking',
-      sidebar_left: 'bannerSidebarLeft',
-      sidebar_right: 'bannerSidebarRight'
+      home_seeking: 'bannerHomeSeeking'
     };
     Object.keys(containers).forEach(zone => {
       const el = document.getElementById(containers[zone]);
@@ -1822,7 +1837,7 @@ async function renderBanners() {
       if (zoneBanners.length === 0) { el.innerHTML = ''; return; }
       el.innerHTML = zoneBanners.map(b =>
         '<a href="' + (b.url && !b.url.startsWith('http') ? 'https://' + b.url : (b.url || '#')) + '" target="_blank" class="block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition my-2">' +
-        '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto ' + (zone.startsWith('sidebar') ? 'max-h-64' : 'max-h-48') + ' object-cover">' +
+        '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto max-h-48 object-cover">' +
         '</a>'
       ).join('');
     });
