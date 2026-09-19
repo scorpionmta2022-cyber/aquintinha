@@ -65,7 +65,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <div class="max-w-7xl mx-auto px-4">
 <div class="flex items-center justify-between h-16">
 <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
-<img src="assets/logo.png" alt="A Quintinha" class="h-16 w-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<img src="assets/logo.png" alt="A Quintinha" class="h-24 w-auto -mt-4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
 <div class="w-10 h-10 bg-amarelo-mostarda rounded-full items-center justify-center text-xl hidden">&#x1F414;</div>
 <span class="text-creme font-bold text-xl hidden sm:block">A Quintinha</span>
 </div>
@@ -127,6 +127,9 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 </div>
 
 <main id="mainContent">
+<div class="flex">
+<div id="bannerSidebarLeft" class="w-48 hidden lg:block px-2 py-4"></div>
+<div class="flex-1 min-w-0">
 
 <!-- HOME PAGE -->
 <section id="pageHome" class="page active">
@@ -469,6 +472,8 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 </div>
 </div>
 </div>
+<div id="bannerSidebarRight" class="w-48 hidden lg:block px-2 py-4"></div>
+</div>
 </section>
 </main>
 
@@ -477,7 +482,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
 <div>
 <div class="flex items-center gap-3 mb-4">
-<img src="assets/logo.png" alt="A Quintinha" class="h-16 w-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<img src="assets/logo.png" alt="A Quintinha" class="h-20 w-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
 <div class="w-10 h-10 bg-amarelo-mostarda rounded-full items-center justify-center text-xl hidden">&#x1F414;</div>
 <span class="font-bold text-xl">A Quintinha</span>
 </div>
@@ -708,6 +713,8 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <option value="home_categories">Apos Categorias</option>
 <option value="home_listings">Apos Anuncios</option>
 <option value="home_seeking">Apos Quem Procura</option>
+<option value="sidebar_left">Lateral Esquerda</option>
+<option value="sidebar_right">Lateral Direita</option>
 </select></div>
 <div><label class="text-sm font-medium">Estado</label>
 <select id="bannerActive" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1">
@@ -1801,7 +1808,13 @@ async function renderBanners() {
     const snap = await db.collection('banners').where('active', '==', true).get();
     const all = [];
     snap.forEach(doc => all.push({id: doc.id, ...doc.data()}));
-    const containers = { home_categories: 'bannerHomeCategories', home_listings: 'bannerHomeListings', home_seeking: 'bannerHomeSeeking' };
+    const containers = { 
+      home_categories: 'bannerHomeCategories', 
+      home_listings: 'bannerHomeListings', 
+      home_seeking: 'bannerHomeSeeking',
+      sidebar_left: 'bannerSidebarLeft',
+      sidebar_right: 'bannerSidebarRight'
+    };
     Object.keys(containers).forEach(zone => {
       const el = document.getElementById(containers[zone]);
       if (!el) return;
@@ -1809,7 +1822,7 @@ async function renderBanners() {
       if (zoneBanners.length === 0) { el.innerHTML = ''; return; }
       el.innerHTML = zoneBanners.map(b =>
         '<a href="' + (b.url && !b.url.startsWith('http') ? 'https://' + b.url : (b.url || '#')) + '" target="_blank" class="block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition my-2">' +
-        '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto max-h-48 object-cover">' +
+        '<img src="' + b.image + '" alt="' + (b.alt || b.title) + '" class="w-full h-auto ' + (zone.startsWith('sidebar') ? 'max-h-64' : 'max-h-48') + ' object-cover">' +
         '</a>'
       ).join('');
     });
