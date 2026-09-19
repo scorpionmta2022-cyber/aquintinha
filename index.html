@@ -1101,11 +1101,16 @@ function closeUserMenu() {
 }
 
 function navigateTo(page) {
+  console.log('navigateTo called with:', page);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const target = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+  const targetId = 'page' + page.charAt(0).toUpperCase() + page.slice(1);
+  const target = document.getElementById(targetId);
+  console.log('Looking for element:', targetId, 'found:', !!target);
   if (target) {
     target.classList.add('active');
     window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    console.error('Page element not found:', targetId);
   }
   switch(page) {
     case 'listings': renderAllListings(); break;
@@ -2484,10 +2489,15 @@ async function trackLocation() {
 
 // INIT
 document.addEventListener('DOMContentLoaded', function() {
-  renderCategories();
-  renderFilterOptions();
-  renderBanners();
-  lucide.createIcons();
+  console.log('DOMContentLoaded fired');
+  try {
+    renderCategories();
+    renderFilterOptions();
+    renderBanners();
+    lucide.createIcons();
+  } catch(e) {
+    console.error('Error in DOMContentLoaded init:', e);
+  }
 
   // Event listeners para calculo automatico de data de expiracao do banner
   ['bannerStartDate', 'bannerPeriod'].forEach(id => {
@@ -2500,28 +2510,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Firebase auth state listener
   auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      // Load user profile from Firestore
-      try {
-        const doc = await db.collection('users').doc(user.uid).get();
-        if (doc.exists) {
-          userProfile = doc.data();
-        } else {
+    try {
+      if (user) {
+        currentUser = user;
+        // Load user profile from Firestore
+        try {
+          const doc = await db.collection('users').doc(user.uid).get();
+          if (doc.exists) {
+            userProfile = doc.data();
+          } else {
+            userProfile = { name: user.email, email: user.email, role: 'user' };
+          }
+        } catch(e) {
           userProfile = { name: user.email, email: user.email, role: 'user' };
         }
-      } catch(e) {
-        userProfile = { name: user.email, email: user.email, role: 'user' };
+        updateUI();
+        renderHomeListings();
+        renderSeeking();
+      } else {
+        currentUser = null;
+        userProfile = null;
+        updateUI();
+        renderHomeListings();
+        renderSeeking();
       }
-      updateUI();
-      renderHomeListings();
-      renderSeeking();
-    } else {
-      currentUser = null;
-      userProfile = null;
-      updateUI();
-      renderHomeListings();
-      renderSeeking();
+    } catch(e) {
+      console.error('Auth state change error:', e);
     }
   });
 
@@ -2546,6 +2560,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   loadAdminPages();
+  
+  // Event delegation for listing cards and buttons
+  document.addEventListener('click', function(e) {
+    // Handle listing card clicks
+    const listingCard = e.target.closest('.listing-card');
+    if (listingCard) {
+      const id = listingCard.dataset.id;
+      const action = e.target.dataset.action;
+      if (action === 'detail') {
+        openDetail(id);
+      } else if (action === 'favorite') {
+        e.stopPropagation();
+        toggleFavorite(id);
+      }
+      return;
+    }
+    
+    // Handle seek detail card clicks
+    const seekCard = e.target.closest('[onclick*="openSeekDetail"]');
+    if (seekCard) {
+      // The onclick will handle it
+      return;
+    }
+  });
 });
 </script>
 </body>
