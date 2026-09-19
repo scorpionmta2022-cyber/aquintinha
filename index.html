@@ -694,7 +694,12 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C43
 <h2 class="text-lg font-bold text-verde-escuro mb-4">Novo Banner</h2>
 <div class="space-y-3">
 <div><label class="text-sm font-medium">Nome interno</label><input type="text" id="bannerTitle" placeholder="Ex: Banner Principal" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
-<div><label class="text-sm font-medium">URL da imagem</label><input type="url" id="bannerImage" placeholder="https://exemplo.com/imagen.jpg" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Imagem (ficheiro ou URL)</label>
+<div class="space-y-2">
+<input type="file" id="bannerImageFile" accept="image/*" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full" onchange="previewBannerImage(this)">
+<input type="url" id="bannerImage" placeholder="Ou cola URL da imagem (ex: https://.../animado.gif)" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<div id="bannerImagePreview" class="hidden"><img id="bannerPreviewImg" class="w-full h-32 object-cover rounded-lg"><button onclick="removeBannerImagePreview()" class="text-xs text-red-500 mt-1">Remover</button></div>
+</div></div>
 <div><label class="text-sm font-medium">Link de destino</label><input type="url" id="bannerUrl" placeholder="https://..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
 <div><label class="text-sm font-medium">Texto alternativo</label><input type="text" id="bannerAlt" placeholder="Descricao da imagem" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
 <div class="grid grid-cols-2 gap-3">
@@ -1475,8 +1480,12 @@ async function submitListing() {
     }
 
     let imageUrl = '';
-    const imgArr = IMAGES[cat] || IMAGES.outros;
-    imageUrl = document.getElementById('createImage').value.trim() || imgArr[Math.floor(Math.random() * imgArr.length)];
+    if (uploadedImageUrl) {
+      imageUrl = uploadedImageUrl;
+    } else {
+      const imgArr = IMAGES[cat] || IMAGES.outros;
+      imageUrl = document.getElementById('createImage').value.trim() || imgArr[Math.floor(Math.random() * imgArr.length)];
+    }
 
     const listingData = {
       title: document.getElementById('createTitle').value.trim(),
@@ -1733,14 +1742,52 @@ function addBanner() {
   document.getElementById('bannerActive').value = 'true';
   openModal('bannerModal');
 }
+// ImgBB API key - obtem em https://api.imgbb.com/
+const IMGBB_API_KEY = '1b0b6a89bd210b9cb08f3921dc5e42aa';
+
+async function uploadToImgBB(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, { method: 'POST', body: formData });
+  const data = await res.json();
+  if (data.success) return data.data.url;
+  throw new Error('Upload falhou');
+}
+
+function previewBannerImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('bannerPreviewImg').src = e.target.result;
+      document.getElementById('bannerImagePreview').classList.remove('hidden');
+      document.getElementById('bannerImage').value = '';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+function removeBannerImagePreview() {
+  document.getElementById('bannerImageFile').value = '';
+  document.getElementById('bannerImagePreview').classList.add('hidden');
+}
+
 async function submitBanner() {
   const title = document.getElementById('bannerTitle').value.trim();
-  const image = document.getElementById('bannerImage').value.trim();
   const url = document.getElementById('bannerUrl').value.trim();
   const alt = document.getElementById('bannerAlt').value.trim();
   const position = document.getElementById('bannerPosition').value;
   const active = document.getElementById('bannerActive').value === 'true';
-  if (!title || !image) { showNotification('Preencha nome e imagem.', 'error'); return; }
+  if (!title) { showNotification('Preencha o nome.', 'error'); return; }
+
+  let image = document.getElementById('bannerImage').value.trim();
+  const fileInput = document.getElementById('bannerImageFile');
+  if (fileInput.files && fileInput.files[0]) {
+    showNotification('A enviar imagem...');
+    try {
+      image = await uploadToImgBB(fileInput.files[0]);
+    } catch(e) { showNotification('Erro no upload: ' + e.message, 'error'); return; }
+  }
+  if (!image) { showNotification('Adiciona imagem (ficheiro ou URL).', 'error'); return; }
+
   try {
     await db.collection('banners').add({ title, image, url: url || '#', alt, position, active, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     closeModal('bannerModal');
@@ -1964,18 +2011,30 @@ async function submitSeek() {
 }
 
 // IMAGE UPLOAD
-let uploadedImageData = null;
+let uploadedImageUrl = null;
 
 function previewImage(input) {
   if (input.files && input.files[0]) {
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) { showNotification('Apenas imagens.', 'error'); return; }
+    
+    // Preview local
     const reader = new FileReader();
     reader.onload = function(e) {
       document.getElementById('previewImg').src = e.target.result;
       document.getElementById('imagePreview').classList.remove('hidden');
       document.getElementById('imageUploadArea').classList.add('hidden');
-      uploadedImageData = e.target.result;
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
+    
+    // Upload para ImgBB
+    uploadToImgBB(file).then(url => {
+      uploadedImageUrl = url;
+      showNotification('Imagem enviada!');
+    }).catch(err => {
+      console.error('ImgBB upload error:', err);
+      showNotification('Erro no upload, usa URL.', 'error');
+    });
   }
 }
 
@@ -1983,7 +2042,7 @@ function removeImagePreview() {
   document.getElementById('imagePreview').classList.add('hidden');
   document.getElementById('imageUploadArea').classList.remove('hidden');
   document.getElementById('createImageFile').value = '';
-  uploadedImageData = null;
+  uploadedImageUrl = null;
 }
 
 async function createAdminUser() {
