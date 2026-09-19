@@ -1105,9 +1105,15 @@ async function renderHomeListings() {
     const g = document.getElementById('homeListings');
     const sg = document.getElementById('homeSeeking');
 
-    const snap = await db.collection('listings').where('active', '==', true).orderBy('createdAt', 'desc').limit(8).get();
+    const snap = await db.collection('listings').where('active', '==', true).get();
     listings = [];
     snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+    listings.sort((a, b) => {
+      const ta = a.createdAt ? a.createdAt.toMillis ? a.createdAt.toMillis() : 0 : 0;
+      const tb = b.createdAt ? b.createdAt.toMillis ? b.createdAt.toMillis() : 0 : 0;
+      return tb - ta;
+    });
+    listings = listings.slice(0, 8);
 
     if (g) {
       if (listings.length === 0) {
@@ -1118,9 +1124,15 @@ async function renderHomeListings() {
     }
 
     if (sg) {
-      const seekSnap = await db.collection('seekings').where('active', '==', true).orderBy('createdAt', 'desc').limit(4).get();
+      const seekSnap = await db.collection('seekings').where('active', '==', true).get();
       seekListings = [];
       seekSnap.forEach(doc => seekListings.push({ id: doc.id, ...doc.data() }));
+      seekListings.sort((a, b) => {
+        const ta = a.createdAt ? a.createdAt.toMillis ? a.createdAt.toMillis() : 0 : 0;
+        const tb = b.createdAt ? b.createdAt.toMillis ? b.createdAt.toMillis() : 0 : 0;
+        return tb - ta;
+      });
+      seekListings = seekListings.slice(0, 4);
       if (seekListings.length === 0) {
         sg.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400 text-sm">Nenhum pedido de procura ativo.</div>';
       } else {
@@ -1221,9 +1233,14 @@ async function renderAllListings() {
     if (!g) return;
     renderFilterOptions();
 
-    const snap = await db.collection('listings').where('active', '==', true).orderBy('createdAt', 'desc').get();
+    const snap = await db.collection('listings').where('active', '==', true).get();
     listings = [];
     snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+    listings.sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
 
     const filtered = getFiltered('allFilter');
     if (filtered.length === 0) {
@@ -1557,9 +1574,10 @@ async function renderAdmin() {
   const lt = document.getElementById('adminListingsTable');
   if (lt) {
     try {
-      const snap = await db.collection('listings').orderBy('createdAt', 'desc').get();
+      const snap = await db.collection('listings').get();
       const items = [];
       snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+      items.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
       if (items.length === 0) {
         lt.innerHTML = '<tr><td colspan="5" class="px-4 py-3 text-gray-400 text-sm">Nenhum anúncio.</td></tr>';
       } else {
@@ -1940,7 +1958,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('#userMenuBtn') && !e.target.closest('#userDropdown')) {
+    if (!e.target.closest('#userMenuArea') && !e.target.closest('#userDropdown')) {
       document.getElementById('userDropdown')?.classList.add('hide');
     }
   });
