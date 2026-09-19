@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="pt" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Quintinha - Animais de Campo</title>
+<meta name="description" content="Classificados de animais de campo.">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{verde:{escuro:'#0B3C26',medio:'#1A5C3A',claro:'#2D7A4E'},amarelo:{mostarda:'#F4C430',claro:'#F5D060',escuro:'#D4A418'},creme:{DEFAULT:'#FDFBF7',escuro:'#F9F6F0'}},fontFamily:{poppins:['Poppins','sans-serif'],caveat:['Caveat','cursive']}}}}
+</script>
+<style>
+*{font-family:'Poppins',sans-serif}
+.font-caveat{font-family:'Caveat',cursive}
+.hide{display:none!important}
+.page{display:none}.page.active{display:block}
+.modal-overlay{opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal-content{transform:translateY(20px);transition:transform .3s}
+.modal-overlay.active .modal-content{transform:translateY(0)}
+.card-hover{transition:transform .2s,box-shadow .2s}
+.card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(11,60,38,.15)}
+.btn-primary{background:#F4C430;color:#0B3C26;font-weight:600;transition:all .2s}
+.btn-primary:hover{background:#D4A418;transform:scale(1.02)}
+.btn-green{background:#0B3C26;color:#FDFBF7;font-weight:600;transition:all .2s}
+.btn-green:hover{background:#1A5C3A}
+.step-line{position:relative}
+.step-line::after{content:'';position:absolute;top:50%;right:-40px;width:80px;height:2px;background:#F4C430}
+.step-line:last-child::after{display:none}
+@media(max-width:768px){.step-line::after{display:none}}
+.hamburger span{display:block;width:24px;height:2px;background:#FDFBF7;transition:all .3s;margin:5px 0}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.tab-btn.active{border-bottom:3px solid #F4C430;color:#0B3C26;font-weight:600}
+.wizard-step{display:none}.wizard-step.active{display:block}
+.hero-bg{background:url('assets/hero-bg.png') center/cover no-repeat;position:relative}
+.hero-bg::before{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(11,60,38,.92) 0%,rgba(11,60,38,.7) 40%,rgba(11,60,38,.2) 70%,transparent 100%);z-index:1}
+.full-width-section{width:100vw;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw}
+.category-card{background:#0B3C26;border:2px solid #F4C430;border-radius:12px;transition:transform .2s,box-shadow .2s}.category-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(11,60,38,.3)}
+.listing-image{aspect-ratio:4/3;object-fit:cover}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 2px #F4C430}
+.admin-tab.active{background:#0B3C26;color:#FDFBF7}
+.notification{position:fixed;top:80px;right:20px;z-index:9999;padding:12px 24px;border-radius:8px;font-weight:500;transform:translateX(120%);transition:transform .3s}
+.notification.show{transform:translateX(0)}
+.notification.success{background:#0B3C26;color:#FDFBF7}
+.notification.error{background:#DC2626;color:#fff}
+.favorite-btn.active svg{fill:#F4C430;color:#F4C430}
+.mobile-nav-link{display:block;color:#FDFBF7;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.15);font-weight:500}
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+</head>
+<body class="bg-creme text-gray-800">
+<div id="notification" class="notification"></div>
+
+<header id="mainHeader" class="sticky top-0 z-50 bg-verde-escuro shadow-lg">
+<div class="max-w-7xl mx-auto px-4">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+<img src="assets/logo.png" alt="A Quintinha" class="h-16 w-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="w-10 h-10 bg-amarelo-mostarda rounded-full items-center justify-center text-xl hidden">&#x1F414;</div>
+<span class="text-creme font-bold text-xl hidden sm:block">A Quintinha</span>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('home');return false" data-i18n="nav_home">Inicio</a>
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('listings');return false" data-i18n="nav_listings">Animais</a>
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('seeking');return false" data-i18n="nav_seek">Procuro</a>
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('adoptions');return false" data-i18n="nav_adoptions">Adocoes</a>
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('how');return false" data-i18n="nav_how">Como funciona</a>
+<a href="#" class="text-creme hover:text-amarelo-mostarda transition font-medium text-sm" onclick="navigateTo('contacts');return false" data-i18n="nav_contacts">Contactos</a>
+</nav>
+<div class="flex items-center gap-3">
+<button onclick="toggleLang()" class="text-creme text-sm font-medium px-2 py-1 rounded border border-creme/30 hover:border-amarelo-mostarda transition" id="langBtn">EN</button>
+<button onclick="requireAuth('createModal')" class="hidden sm:flex btn-primary px-4 py-2 rounded-full text-sm items-center gap-1">
+<i data-lucide="plus" class="w-4 h-4"></i><span>Vender animal</span>
+</button>
+<button onclick="requireAuth('seekModal')" class="hidden sm:flex bg-white/10 hover:bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full text-sm items-center gap-1 transition">
+<i data-lucide="search" class="w-4 h-4"></i><span>Procuro animal</span>
+</button>
+<div id="userArea">
+<button onclick="openModal('authModal')" class="text-creme text-sm font-medium flex items-center gap-1 hover:text-amarelo-mostarda transition">
+<i data-lucide="user" class="w-4 h-4"></i><span>Entrar</span>
+</button>
+</div>
+<div id="userMenuArea" class="hide relative">
+<button onclick="toggleUserMenu()" class="flex items-center gap-2 text-creme hover:text-amarelo-mostarda transition">
+<div class="w-8 h-8 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold text-sm" id="userAvatar">U</div>
+</button>
+<div id="userDropdown" class="absolute right-0 top-12 bg-white rounded-lg shadow-xl py-2 w-48 hide z-50">
+<a href="#" class="block px-4 py-2 text-sm hover:bg-creme-escuro transition" onclick="navigateTo('account');closeUserMenu();return false">A Minha Conta</a>
+<a href="#" class="block px-4 py-2 text-sm hover:bg-creme-escuro transition" onclick="navigateTo('account');showAccountTab('mylistings');closeUserMenu();return false">Os Meus Anuncios</a>
+<a href="#" class="block px-4 py-2 text-sm hover:bg-creme-escuro transition" onclick="navigateTo('account');showAccountTab('favorites');closeUserMenu();return false">Favoritos</a>
+<a href="#" class="admin-link block px-4 py-2 text-sm hover:bg-creme-escuro text-red-600 transition hide" onclick="navigateTo('admin');closeUserMenu();return false">Admin</a>
+<hr class="my-1">
+<a href="#" class="block px-4 py-2 text-sm hover:bg-creme-escuro text-red-600 transition" onclick="logout();return false">Sair</a>
+</div>
+</div>
+<button class="hamburger md:hidden" onclick="toggleMobileMenu()" id="hamburger">
+<span></span><span></span><span></span>
+</button>
+</div>
+</div>
+</header>
+<div id="mobileMenu" class="md:hidden bg-verde-medio hide">
+<div class="px-4 py-4 space-y-1">
+<a href="#" class="mobile-nav-link" onclick="navigateTo('home');toggleMobileMenu();return false">Inicio</a>
+<a href="#" class="mobile-nav-link" onclick="navigateTo('listings');toggleMobileMenu();return false">Animais</a>
+<a href="#" class="mobile-nav-link" onclick="navigateTo('seeking');toggleMobileMenu();return false">Procuro</a>
+<a href="#" class="mobile-nav-link" onclick="navigateTo('adoptions');toggleMobileMenu();return false">Adocoes</a>
+<a href="#" class="mobile-nav-link" onclick="navigateTo('how');toggleMobileMenu();return false">Como funciona</a>
+<a href="#" class="mobile-nav-link" onclick="navigateTo('contacts');toggleMobileMenu();return false">Contactos</a>
+<button onclick="requireAuth('createModal');toggleMobileMenu()" class="w-full mt-3 btn-primary px-4 py-2 rounded-full text-sm">+ Vender animal</button>
+<button onclick="requireAuth('seekModal');toggleMobileMenu()" class="w-full mt-2 bg-white/10 text-white border border-white/30 px-4 py-2 rounded-full text-sm">+ Procuro animal</button>
+</div>
+</div>
+
+<main id="mainContent">
+
+<!-- HOME PAGE -->
+<section id="pageHome" class="page active">
+<div class="hero-bg relative overflow-hidden min-h-[480px] flex items-center">
+<div class="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10 w-full">
+<div class="max-w-xl">
+<h1 class="text-white text-4xl md:text-5xl font-bold leading-tight mb-1" data-i18n="hero_title">Animais de Campo,</h1>
+<p class="font-caveat text-amarelo-mostarda text-4xl md:text-5xl mb-4" data-i18n="hero_sub">com carinho e confianca</p>
+<p class="text-creme/90 text-base md:text-lg mb-8 max-w-md leading-relaxed" data-i18n="hero_desc">Encontre ou annuncie animais da quinta perto de si.</p>
+<div class="flex flex-wrap gap-3">
+<button onclick="navigateTo('listings')" class="btn-primary px-7 py-3 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
+<i data-lucide="search" class="w-5 h-5"></i> <span data-i18n="hero_btn1">Ver animais</span>
+</button>
+<button onclick="requireAuth('createModal')" class="border-2 border-amarelo-mostarda text-amarelo-mostarda px-7 py-3 rounded-full text-sm font-semibold hover:bg-amarelo-mostarda hover:text-verde-escuro transition flex items-center gap-2">
+<i data-lucide="plus" class="w-5 h-5"></i> <span data-i18n="hero_btn2">Quero vender</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<section class="py-10 md:py-14 full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<div class="text-center mb-10">
+<h2 class="text-2xl md:text-3xl font-bold text-verde-escuro" data-i18n="cat_title">Categorias</h2>
+<p class="font-caveat text-amarelo-mostarda text-2xl mt-1">Encontre o que procura</p>
+</div>
+<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4" id="categoriesGrid"></div>
+</div>
+</section>
+
+<section class="py-10 bg-creme-escuro full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<div class="bg-white rounded-2xl shadow-md p-4 md:p-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+<input type="text" id="filterSearch" placeholder="Procurar animais..." data-i18n-placeholder="filter_search" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="filterCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Todas as categorias</option>
+</select>
+<select id="filterLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Todos os locais</option>
+</select>
+<select id="filterDeal" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Venda e Troca</option>
+<option value="venda">Venda</option>
+<option value="troca">Troca</option>
+</select>
+<button onclick="applyFilters()" class="btn-green px-6 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+<i data-lucide="search" class="w-4 h-4"></i> Procurar
+</button>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-10 full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<div class="mb-6">
+<h2 class="text-2xl md:text-3xl font-bold text-verde-escuro" data-i18n="listings_title">Animais disponiveis</h2>
+<p class="font-caveat text-amarelo-mostarda text-xl mt-1">Os melhores para si</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="homeListings"></div>
+</div>
+</section>
+
+<section class="py-10 bg-creme-escuro full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="text-2xl md:text-3xl font-bold text-verde-escuro" data-i18n="seeking_title">Quem procura</h2>
+<p class="font-caveat text-amarelo-mostarda text-xl mt-1">Pessoas que procuram animais especificos</p>
+</div>
+<a href="#" onclick="navigateTo('seeking');return false" class="btn-green px-4 py-2 rounded-lg text-sm flex items-center gap-1">Ver todos</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="homeSeeking"></div>
+</div>
+</section>
+
+<section class="py-14 bg-verde-escuro full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<h2 class="text-2xl md:text-3xl font-bold text-white text-center mb-4" data-i18n="how_title">Como funciona</h2>
+<p class="font-caveat text-amarelo-mostarda text-xl text-center mb-10">Simples, seguro e entre pessoas!</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+<div class="hidden md:block absolute top-8 left-[20%] right-[20%] h-0.5 bg-amarelo-mostarda/30"></div>
+<div class="text-center relative">
+<div class="w-16 h-16 bg-amarelo-mostarda rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+<span class="text-verde-escuro font-bold text-xl">1</span>
+</div>
+<h3 class="text-white font-bold text-lg mb-2">Publique o seu anuncio</h3>
+<p class="text-creme/70 text-sm max-w-xs mx-auto">Adicione fotos e detalhes do seu animal em poucos minutos.</p>
+</div>
+<div class="text-center relative">
+<div class="w-16 h-16 bg-amarelo-mostarda rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+<span class="text-verde-escuro font-bold text-xl">2</span>
+</div>
+<h3 class="text-white font-bold text-lg mb-2">Encontre interessados</h3>
+<p class="text-creme/70 text-sm max-w-xs mx-auto">Pessoas da sua zona vao ver o seu anuncio e entrar em contacto.</p>
+</div>
+<div class="text-center relative">
+<div class="w-16 h-16 bg-amarelo-mostarda rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+<span class="text-verde-escuro font-bold text-xl">3</span>
+</div>
+<h3 class="text-white font-bold text-lg mb-2">Combine a entrega</h3>
+<p class="text-creme/70 text-sm max-w-xs mx-auto">Marque o local e horario que melhor lhe convier.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="py-10 bg-creme-escuro border-y border-gray-200 full-width-section">
+<div class="max-w-7xl mx-auto px-4">
+<div class="text-center mb-8">
+<h3 class="font-caveat text-verde-escuro text-2xl" data-i18n="trust_title">A sua confianca e a nossa prioridade</h3>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="shield-check" class="w-6 h-6 text-verde-escuro"></i></div>
+<p class="text-xs font-semibold text-verde-escuro">Anuncios Verificados</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="map-pin" class="w-6 h-6 text-verde-escuro"></i></div>
+<p class="text-xs font-semibold text-verde-escuro">Proximo de Si</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="message-circle" class="w-6 h-6 text-verde-escuro"></i></div>
+<p class="text-xs font-semibold text-verde-escuro">Contacto Direto</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="heart" class="w-6 h-6 text-verde-escuro"></i></div>
+<p class="text-xs font-semibold text-verde-escuro">Feito com Carinho</p>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="euro" class="w-6 h-6 text-verde-escuro"></i></div>
+<p class="text-xs font-semibold text-verde-escuro">Precos Justos</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+<!-- ALL LISTINGS PAGE -->
+<section id="pageListings" class="page">
+<div class="max-w-7xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-6" data-i18n="all_listings">Todos os Animais</h1>
+<div class="bg-white rounded-2xl shadow-md p-4 md:p-6 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+<input type="text" id="allFilterSearch" placeholder="Procurar..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="allFilterCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todas</option></select>
+<select id="allFilterLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todos</option></select>
+<select id="allFilterDeal" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Venda e Troca</option><option value="venda">Venda</option><option value="troca">Troca</option>
+</select>
+<button onclick="applyAllFilters()" class="btn-green px-6 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+<i data-lucide="search" class="w-4 h-4"></i> Procurar
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="allListings"></div>
+</div>
+</section>
+
+<!-- ADOPTIONS PAGE -->
+<section id="pageAdoptions" class="page">
+<div class="max-w-7xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-2" data-i18n="adoptions_title">Adoções</h1>
+<p class="font-caveat text-amarelo-mostarda text-xl mb-6" data-i18n="adoptions_sub">Dê um lar a um animal que precisa de si</p>
+<div class="bg-white rounded-2xl shadow-md p-4 md:p-6 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+<input type="text" id="adoptFilterSearch" placeholder="Procurar..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="adoptFilterCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todas</option></select>
+<select id="adoptFilterLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todos</option></select>
+<button onclick="applyAdoptFilters()" class="btn-green px-6 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+<i data-lucide="search" class="w-4 h-4"></i> Procurar
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="adoptionListings"></div>
+</div>
+</section>
+
+<!-- SEEKING PAGE -->
+<section id="pageSeeking" class="page">
+<div class="max-w-7xl mx-auto px-4 py-10">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro" data-i18n="seeking_page_title">Procuro Animais</h1>
+<p class="font-caveat text-amarelo-mostarda text-xl mt-1" data-i18n="seeking_page_sub">Pessoas que procuram animais específicos</p>
+</div>
+<button onclick="requireAuth('seekModal')" class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-1">
+<i data-lucide="plus" class="w-4 h-4"></i> <span data-i18n="seeking_new">Novo Pedido</span>
+</button>
+</div>
+<div class="bg-white rounded-2xl shadow-md p-4 md:p-6 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+<input type="text" id="seekFilterSearch" placeholder="Procurar..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="seekFilterCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todas</option></select>
+<select id="seekFilterLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"><option value="">Todos</option></select>
+<button onclick="applySeekFilters()" class="btn-green px-6 py-2.5 rounded-lg text-sm flex items-center justify-center gap-2">
+<i data-lucide="search" class="w-4 h-4"></i> Procurar
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="seekingListings"></div>
+</div>
+</section>
+
+<!-- HOW IT WORKS PAGE -->
+<section id="pageHow" class="page">
+<div class="max-w-3xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-8 text-center">Como Funciona</h1>
+<div class="space-y-8">
+<div class="flex gap-4 items-start bg-white rounded-xl p-6 shadow-sm">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center flex-shrink-0 text-verde-escuro font-bold text-lg">1</div>
+<div><h3 class="font-bold text-verde-escuro mb-1">Publique o seu anuncio</h3><p class="text-gray-600 text-sm">Crie uma conta gratuita, adicione fotos, descreva o animal, defina o preco e a localizacao. E assim simples!</p></div>
+</div>
+<div class="flex gap-4 items-start bg-white rounded-xl p-6 shadow-sm">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center flex-shrink-0 text-verde-escuro font-bold text-lg">2</div>
+<div><h3 class="font-bold text-verde-escuro mb-1">Encontre compradores</h3><p class="text-gray-600 text-sm">O seu anuncio fica visivel para pessoas na sua zona. Interessados podem contacto-lo diretamente.</p></div>
+</div>
+<div class="flex gap-4 items-start bg-white rounded-xl p-6 shadow-sm">
+<div class="w-12 h-12 bg-amarelo-mostarda rounded-full flex items-center justify-center flex-shrink-0 text-verde-escuro font-bold text-lg">3</div>
+<div><h3 class="font-bold text-verde-escuro mb-1">Combine a entrega</h3><p class="text-gray-600 text-sm">Marque o local e horario. Pode ser na sua quintinha ou num ponto de encontro.</p></div>
+</div>
+</div>
+<p class="font-caveat text-amarelo-mostarda text-2xl text-center mt-8">Simples, seguro e entre pessoas!</p>
+</div>
+</section>
+
+<!-- CONTACTS PAGE -->
+<section id="pageContacts" class="page">
+<div class="max-w-3xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-8 text-center">Contactos</h1>
+<div class="bg-white rounded-2xl shadow-md p-8">
+<div class="space-y-6">
+<div class="flex items-center gap-4"><div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="mail" class="w-5 h-5 text-verde-escuro"></i></div><div><p class="font-semibold text-verde-escuro">Email</p><p class="text-gray-600">info@aquintinha.pt</p></div></div>
+<div class="flex items-center gap-4"><div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="phone" class="w-5 h-5 text-verde-escuro"></i></div><div><p class="font-semibold text-verde-escuro">Telefone</p><p class="text-gray-600">+351 912 345 678</p></div></div>
+<div class="flex items-center gap-4"><div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5 text-verde-escuro"></i></div><div><p class="font-semibold text-verde-escuro">Localizacao</p><p class="text-gray-600">Portugal</p></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ACCOUNT PAGE -->
+<section id="pageAccount" class="page">
+<div class="max-w-5xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-6">A Minha Conta</h1>
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+<button onclick="showAccountTab('dashboard')" class="tab-btn active px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 border-transparent" data-tab="dashboard">Dashboard</button>
+<button onclick="showAccountTab('mylistings')" class="tab-btn px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 border-transparent" data-tab="mylistings">Os Meus Anuncios</button>
+<button onclick="showAccountTab('favorites')" class="tab-btn px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 border-transparent" data-tab="favorites">Favoritos</button>
+<button onclick="showAccountTab('profile')" class="tab-btn px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 border-transparent" data-tab="profile">Perfil</button>
+</div>
+<div id="accountDashboard" class="account-tab">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+<div class="bg-white rounded-xl p-5 shadow-sm text-center"><p class="text-3xl font-bold text-verde-escuro" id="statListings">0</p><p class="text-sm text-gray-500">Anuncios</p></div>
+<div class="bg-white rounded-xl p-5 shadow-sm text-center"><p class="text-3xl font-bold text-verde-escuro" id="statFavorites">0</p><p class="text-sm text-gray-500">Favoritos</p></div>
+<div class="bg-white rounded-xl p-5 shadow-sm text-center"><p class="text-3xl font-bold text-amarelo-mostarda" id="statMember">-</p><p class="text-sm text-gray-500">Membro desde</p></div>
+</div>
+</div>
+<div id="accountMylistings" class="account-tab hide">
+<div class="flex justify-between items-center mb-4"><h2 class="font-bold text-verde-escuro">Os Meus Anuncios</h2>
+<button onclick="requireAuth('createModal')" class="btn-primary px-4 py-2 rounded-lg text-sm">+ Novo Anuncio</button></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="myListingsGrid"></div>
+</div>
+<div id="accountFavorites" class="account-tab hide">
+<h2 class="font-bold text-verde-escuro mb-4">Favoritos</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="favoritesGrid"></div>
+</div>
+<div id="accountProfile" class="account-tab hide">
+<div class="bg-white rounded-xl p-6 shadow-sm max-w-md">
+<h2 class="font-bold text-verde-escuro mb-4">Dados do Perfil</h2>
+<div class="space-y-3">
+<div><label class="text-sm font-medium">Nome</label><input type="text" id="profileName" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Email</label><input type="email" id="profileEmail" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1" readonly></div>
+<div><label class="text-sm font-medium">Telefone</label><input type="tel" id="profilePhone" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Localizacao</label><select id="profileLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></select></div>
+<button onclick="saveProfile()" class="btn-green px-6 py-2.5 rounded-lg text-sm mt-4">Guardar</button>
+<div class="mt-6 pt-6 border-t border-gray-200">
+  <h3 class="font-bold text-gray-800 mb-3">Alterar Password</h3>
+  <div class="space-y-3">
+    <input type="password" id="currentPassword" placeholder="Password atual" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amarelo-mostarda focus:border-transparent outline-none">
+    <input type="password" id="newPassword" placeholder="Nova password" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amarelo-mostarda focus:border-transparent outline-none">
+    <input type="password" id="confirmPassword" placeholder="Confirmar nova password" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-amarelo-mostarda focus:border-transparent outline-none">
+    <button onclick="changePassword()" class="bg-verde-escuro text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">Alterar Password</button>
+  </div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ADMIN PAGE -->
+<section id="pageAdmin" class="page">
+<div class="max-w-7xl mx-auto px-4 py-10">
+<h1 class="text-2xl md:text-3xl font-bold text-verde-escuro mb-6">Painel Admin</h1>
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+<button onclick="showAdminTab('adminListings')" class="admin-tab active px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Anuncios</button>
+<button onclick="showAdminTab('adminUsers')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Utilizadores</button>
+<button onclick="showAdminTab('adminBanners')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Banners</button>
+<button onclick="showAdminTab('adminPages')" class="admin-tab px-4 py-2 text-sm font-medium rounded-t-lg whitespace-nowrap">Paginas</button>
+</div>
+<div id="adminDashboard" class="mb-6"></div>
+<div id="adminListings" class="admin-panel">
+<div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-verde-escuro text-creme"><tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Titulo</th><th class="px-4 py-3">Categoria</th><th class="px-4 py-3">Preco</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3">Acoes</th></tr></thead>
+<tbody id="adminListingsTable"></tbody>
+</table>
+</div>
+</div>
+<div id="adminUsers" class="admin-panel hide">
+<div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-verde-escuro text-creme"><tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Nome</th><th class="px-4 py-3">Email</th><th class="px-4 py-3">Role</th><th class="px-4 py-3">Acoes</th></tr></thead>
+<tbody id="adminUsersTable"></tbody>
+</table>
+</div>
+</div>
+<div id="adminBanners" class="admin-panel hide">
+<div class="bg-white rounded-xl shadow-sm p-6">
+<h3 class="font-bold text-verde-escuro mb-4">Gerir Banners</h3>
+<div class="space-y-3" id="bannerList"></div>
+<button onclick="addBanner()" class="btn-primary px-4 py-2 rounded-lg text-sm mt-4">+ Novo Banner</button>
+</div>
+</div>
+<div id="adminPages" class="admin-panel hide">
+<div class="bg-white rounded-xl shadow-sm p-6">
+<h3 class="font-bold text-verde-escuro mb-4">Gerir Paginas Estaticas</h3>
+<div class="space-y-4">
+<div><label class="text-sm font-medium">Sobre Nos</label><textarea id="pageAbout" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
+<div><label class="text-sm font-medium">Termos e Condicoes</label><textarea id="pageTerms" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
+<div><label class="text-sm font-medium">Politica de Privacidade</label><textarea id="pagePrivacy" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1 h-24"></textarea></div>
+<button onclick="savePages()" class="btn-green px-6 py-2.5 rounded-lg text-sm mt-4">Guardar Alteracoes</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer class="bg-verde-escuro text-creme pt-12 pb-6">
+<div class="max-w-7xl mx-auto px-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+<div>
+<div class="flex items-center gap-3 mb-4">
+<img src="assets/logo.png" alt="A Quintinha" class="h-16 w-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="w-10 h-10 bg-amarelo-mostarda rounded-full items-center justify-center text-xl hidden">&#x1F414;</div>
+<span class="font-bold text-xl">A Quintinha</span>
+</div>
+<p class="text-creme/70 text-sm" data-i18n="footer_desc">Classificados de animais de campo em Portugal.</p>
+</div>
+<div>
+<h4 class="font-bold mb-3" data-i18n="footer_contacts">Contactos</h4>
+<div class="space-y-2 text-sm text-creme/70">
+<p class="flex items-center gap-2"><i data-lucide="mail" class="w-4 h-4"></i> info@aquintinha.pt</p>
+<p class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> +351 912 345 678</p>
+<p class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> Portugal</p>
+</div>
+</div>
+<div>
+<h4 class="font-bold mb-3" data-i18n="footer_links">Links uteis</h4>
+<div class="space-y-2 text-sm text-creme/70">
+<a href="#" class="block hover:text-amarelo-mostarda transition" onclick="navigateTo('home');return false">Inicio</a>
+<a href="#" class="block hover:text-amarelo-mostarda transition" onclick="navigateTo('listings');return false">Animais</a>
+<a href="#" class="block hover:text-amarelo-mostarda transition" onclick="navigateTo('how');return false">Como funciona</a>
+<a href="#" class="block hover:text-amarelo-mostarda transition" onclick="navigateTo('contacts');return false">Contactos</a>
+</div>
+</div>
+<div>
+<h4 class="font-bold mb-3" data-i18n="footer_social">Redes Sociais</h4>
+<div class="flex gap-3 mb-4">
+<a href="#" class="w-9 h-9 bg-creme/20 rounded-full flex items-center justify-center hover:bg-amarelo-mostarda transition"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+<a href="#" class="w-9 h-9 bg-creme/20 rounded-full flex items-center justify-center hover:bg-amarelo-mostarda transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+</div>
+<p class="font-caveat text-amarelo-mostarda text-xl" data-i18n="footer_quote">Juntos por uma quinta mais proxima!</p>
+</div>
+</div>
+<hr class="border-creme/20 mb-4">
+<div class="flex flex-wrap justify-between items-center text-xs text-creme/50">
+<p>&copy; 2025 A Quintinha. Todos os direitos reservados.</p>
+<div class="flex gap-4">
+<a href="#" class="hover:text-amarelo-mostarda">Termos</a>
+<a href="#" class="hover:text-amarelo-mostarda">Privacidade</a>
+<a href="#" class="hover:text-amarelo-mostarda">Cookies</a>
+</div>
+</div>
+</div>
+</footer>
+</main>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('authModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-md p-6 relative">
+<button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<div class="flex gap-4 mb-6 border-b border-gray-200">
+<button onclick="showAuthTab('login')" class="tab-btn active pb-3 text-sm font-medium" id="authLoginTab">Entrar</button>
+<button onclick="showAuthTab('register')" class="tab-btn pb-3 text-sm font-medium" id="authRegisterTab">Registar</button>
+</div>
+<div id="authLoginForm">
+<div class="space-y-3">
+<input type="email" id="loginEmail" placeholder="Email" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="password" id="loginPassword" placeholder="Password" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<button onclick="doLogin()" class="btn-green w-full py-2.5 rounded-lg text-sm">Entrar</button>
+</div>
+<p class="text-xs text-gray-400 mt-3 text-center">Demo: admin@aquintinha.pt / user@test.pt</p>
+</div>
+<div id="authRegisterForm" class="hide">
+<div class="space-y-3">
+<input type="text" id="regName" placeholder="Nome completo" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="email" id="regEmail" placeholder="Email" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="tel" id="regPhone" placeholder="Telefone (opcional)" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<select id="regLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full" onchange="populateConcelhos('regLocation','regConcelho')">
+<option value="">Selecionar distrito...</option>
+</select>
+<select id="regConcelho" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Selecionar concelho...</option>
+</select>
+<input type="password" id="regPassword" placeholder="Password" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="password" id="regPassword2" placeholder="Confirmar password" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<button onclick="doRegister()" class="btn-green w-full py-2.5 rounded-lg text-sm">Criar Conta</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CREATE LISTING MODAL -->
+<div id="createModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('createModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+<button onclick="closeModal('createModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
+<h2 class="text-lg font-bold text-verde-escuro mb-4">Novo Anuncio</h2>
+<div class="flex gap-2 mb-6">
+<div class="wizard-indicator w-8 h-2 rounded-full bg-amarelo-mostarda"></div>
+<div class="wizard-indicator w-8 h-2 rounded-full bg-gray-300"></div>
+<div class="wizard-indicator w-8 h-2 rounded-full bg-gray-300"></div>
+</div>
+<div class="wizard-step active" id="wizard1">
+<div class="space-y-3">
+<select id="createCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Selecionar categoria...</option>
+</select>
+<input type="text" id="createTitle" placeholder="Titulo do anuncio" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<textarea id="createDesc" placeholder="Descricao do animal..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full h-24"></textarea>
+<div class="grid grid-cols-2 gap-3">
+<input type="text" id="createBreed" placeholder="Raca" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="text" id="createAge" placeholder="Ex: 6 meses" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+</div>
+</div>
+<div class="flex justify-end mt-4"><button onclick="wizardNext(1)" class="btn-green px-6 py-2 rounded-lg text-sm">Proximo</button></div>
+</div>
+<div class="wizard-step" id="wizard2">
+<div class="space-y-3">
+<div class="grid grid-cols-2 gap-3">
+<div><label class="text-sm font-medium">Preco</label><input type="number" id="createPrice" placeholder="0.00" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div><label class="text-sm font-medium">Unidade</label><select id="createUnit" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"><option value="unidade">Unidade</option><option value="par">Par</option><option value="dúzia">Duzia</option></select></div>
+</div>
+<div><label class="text-sm font-medium">Tipo de negocio</label>
+<div class="flex gap-3 mt-1">
+<label class="flex-1 border border-gray-300 rounded-lg p-3 text-center cursor-pointer has-[:checked]:border-verde-escuro has-[:checked]:bg-verde-escuro/5"><input type="radio" name="dealType" value="venda" class="hidden" checked><span class="text-sm font-medium">Venda</span></label>
+<label class="flex-1 border border-gray-300 rounded-lg p-3 text-center cursor-pointer has-[:checked]:border-verde-escuro has-[:checked]:bg-verde-escuro/5"><input type="radio" name="dealType" value="troca" class="hidden"><span class="text-sm font-medium">Troca</span></label>
+</div>
+</div>
+<div><label class="text-sm font-medium">Fotografia</label>
+<div id="imageUploadArea" class="border-2 border-dashed border-gray-300 rounded-lg p-4 mt-1 text-center cursor-pointer hover:border-amarelo-mostarda transition" onclick="document.getElementById('createImageFile').click()">
+<i data-lucide="camera" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+<p class="text-sm text-gray-500">Clique para adicionar foto</p>
+<p class="text-xs text-gray-400">ou arraste uma imagem</p>
+</div>
+<input type="file" id="createImageFile" accept="image/*" class="hidden" onchange="previewImage(this)">
+<div id="imagePreview" class="mt-2 hidden"><img id="previewImg" class="w-full h-40 object-cover rounded-lg"><button onclick="removeImagePreview()" class="text-xs text-red-500 mt-1">Remover</button></div>
+<input type="url" id="createImage" placeholder="Ou cole o URL da imagem" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-2">
+</div>
+</div>
+<div class="flex justify-between mt-4">
+<button onclick="wizardPrev(2)" class="border border-gray-300 px-6 py-2 rounded-lg text-sm">Voltar</button>
+<button onclick="wizardNext(2)" class="btn-green px-6 py-2 rounded-lg text-sm">Proximo</button>
+</div>
+</div>
+<div class="wizard-step" id="wizard3">
+<div class="space-y-3">
+<select id="createLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full" onchange="populateConcelhos('createLocation','createConcelho')">
+<option value="">Selecionar distrito...</option>
+</select>
+<select id="createConcelho" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-2">
+<option value="">Selecionar concelho...</option>
+</select>
+<div class="bg-creme-escuro rounded-lg p-4 mt-3">
+<h4 class="font-bold text-sm text-verde-escuro mb-2">Resumo</h4>
+<div id="createSummary" class="text-sm text-gray-600 space-y-1"></div>
+</div>
+</div>
+<div class="flex justify-between mt-4">
+<button onclick="wizardPrev(3)" class="border border-gray-300 px-6 py-2 rounded-lg text-sm">Voltar</button>
+<button onclick="submitListing()" class="btn-primary px-6 py-2 rounded-lg text-sm">Publicar Anuncio</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- LISTING DETAIL MODAL -->
+<div id="detailModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('detailModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+<button onclick="closeModal('detailModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10 bg-white/80 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+<div id="detailContent"></div>
+</div>
+</div>
+
+<!-- REPORT MODAL -->
+<div id="reportModal" class="modal-overlay fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('reportModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-md p-6 relative">
+<button onclick="closeModal('reportModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+<h3 class="font-bold text-verde-escuro mb-4">Reportar Anuncio</h3>
+<textarea id="reportReason" placeholder="Motivo da queixa..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full h-24 mb-4"></textarea>
+<div class="flex gap-3 justify-end">
+<button onclick="closeModal('reportModal')" class="border border-gray-300 px-4 py-2 rounded-lg text-sm">Cancelar</button>
+<button onclick="submitReport()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium">Reportar</button>
+</div>
+</div>
+</div>
+
+<!-- SEEK ANIMAL MODAL -->
+<div id="seekModal" class="modal-overlay fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal('seekModal')">
+<div class="modal-content bg-white rounded-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+<button onclick="closeModal('seekModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
+<h2 class="text-lg font-bold text-verde-escuro mb-1">Procuro Animal</h2>
+<p class="text-sm text-gray-500 mb-4">Indique que animal procura e as pessoas entram em contacto consigo.</p>
+<div class="flex gap-2 mb-6">
+<div class="wizard-indicator w-8 h-2 rounded-full bg-amarelo-mostarda"></div>
+<div class="wizard-indicator w-8 h-2 rounded-full bg-gray-300"></div>
+</div>
+<div class="wizard-step active" id="seekWizard1">
+<div class="space-y-3">
+<select id="seekCategory" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<option value="">Que tipo de animal procura?</option>
+</select>
+<input type="text" id="seekBreed" placeholder="Raca pretendida (opcional)" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<input type="text" id="seekAge" placeholder="Idade pretendida (ex: jovem, adulto)" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full">
+<textarea id="seekDesc" placeholder="Descreva o que procura, preferencias, zona de recolha..." class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full h-24"></textarea>
+</div>
+<div class="flex justify-end mt-4"><button onclick="seekWizardNext(1)" class="btn-green px-6 py-2 rounded-lg text-sm">Proximo</button></div>
+</div>
+<div class="wizard-step" id="seekWizard2">
+<div class="space-y-3">
+<select id="seekLocation" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full"></select>
+<div><label class="text-sm font-medium">Preco maximo pretendido</label><input type="number" id="seekPrice" placeholder="0 = sem limite" class="border border-gray-300 rounded-lg px-4 py-2.5 text-sm w-full mt-1"></div>
+<div class="bg-creme-escuro rounded-lg p-4 mt-3">
+<h4 class="font-bold text-sm text-verde-escuro mb-2">Resumo do pedido</h4>
+<div id="seekSummary" class="text-sm text-gray-600 space-y-1"></div>
+</div>
+</div>
+<div class="flex justify-between mt-4">
+<button onclick="seekWizardPrev(2)" class="border border-gray-300 px-6 py-2 rounded-lg text-sm">Voltar</button>
+<button onclick="submitSeek()" class="btn-primary px-6 py-2 rounded-lg text-sm">Publicar Pedido</button>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyCq8GgZ3518EZJdb8I-W3ujj8LBl_DrP4U",
+  authDomain: "a-quintinha1.firebaseapp.com",
+  projectId: "a-quintinha1",
+  storageBucket: "a-quintinha1.firebasestorage.app",
+  messagingSenderId: "366374882177",
+  appId: "1:366374882177:web:c7057866289f2c1868b680"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Current Firebase user data (extends auth user with Firestore profile)
+let userProfile = null;
+
+const CATEGORIES = [
+  {id:'galinhas',name:'Galinhas',emoji:'&#x1F414;'},
+  {id:'garnizos',name:'Garnizos',emoji:'&#x1F413;'},
+  {id:'patos',name:'Patos',emoji:'&#x1F426;'},
+  {id:'coelhos',name:'Coelhos',emoji:'&#x1F430;'},
+  {id:'cabras',name:'Cabras',emoji:'&#x1F410;'},
+  {id:'ovelhas',name:'Ovelhas',emoji:'&#x1F411;'},
+  {id:'perus',name:'Perus',emoji:'&#x1F983;'},
+  {id:'caes',name:'Caes',emoji:'&#x1F415;'},
+  {id:'gatos',name:'Gatos',emoji:'&#x1F408;'},
+  {id:'pequenos',name:'Pequenos Animais',emoji:'&#x1F439;'},
+  {id:'outros',name:'Outros',emoji:'&#x1F33F;'},
+  {id:'adocoes',name:'Adocoes',emoji:'&#x1F49D;'}
+];
+
+const LOCATIONS = {
+  'Aveiro':['Agueda','Albergaria-a-Velha','Anadia','Arouca','Aveiro','Castelo de Paiva','Espinho','Estarreja','Ilhavo','Mealhada','Murtosa','Oliveira de Azemeis','Oliveira do Bairro','Ovar','Santa Maria da Feira','Sao Joao da Madeira','Sever do Vouga','Vagos','Vale de Cambra'],
+  'Beja':['Aljustrel','Almodovar','Alvito','Barrancos','Beja','Castro Verde','Cuba','Ferreira do Alentejo','Mertola','Moura','Odemira','Ourique','Serpa','Vidigueira'],
+  'Braga':['Amares','Barcelos','Braga','Cabeceiras de Basto','Celorico de Basto','Esposende','Guimaraes','Povoa de Lanhoso','Terras de Bouro','Vieira do Minho','Vila Nova de Famalicao','Vila Verde','Vizela'],
+  'Braganca':['Alfandega da Fe','Braganca','Carrazeda de Ansiães','Freixo de Espada a Cinta','Macedo de Cavaleiros','Miranda do Douro','Mirandela','Mogadouro','Parada de Silves','Rapoula do Coa','Ribas de Sousa','Sabrosa','Santa Marta de Penaguiao','Valpacos','Vila Flor','Vimioso','Vinhais'],
+  'Castelo Branco':['Belmonte','Castelo Branco','Covilha','Fundao','Idanha-a-Nova','Oleiros','Penamacor','Proenca-a-Nova','Serta','Vila de Rei','Vila Velha de Rodao'],
+  'Coimbra':['Arganil','Cantanhede','Coimbra','Condeixa-a-Nova','Figueira da Foz','Gois','Lousa','Mira','Montemor-o-Velho','Oliveira do Hospital','Pampilhosa da Serra','Penacova','Penela','Soure','Tabua','Vila Nova de Poiares'],
+  'Evora':['Alandroal','Arraiolos','Borba','Estremoz','Evora','Montemor-o-Novo','Mora','Mourao','Olivenca','Reguengos de Monsaraz','Redondo','Vendas Novas','Viana do Alentejo','Vila Vicasa'],
+  'Faro':['Albufeira','Alcoutim','Aljezur','Castro Marim','Faro','Lagoa','Loule','Lagos','Monchique','Olhao','Portimao','Sao Bras de Alportel','Silves','Tavira','Vila do Bispo','Vila Real de Santo Antonio'],
+  'Guarda':['Aguiar da Beira','Almeida','Belmonte','Celorico da Beira','Covilha','Figueira de Castelo Rodrigo','Fornos de Algodres','Gouveia','Guarda','Idanha-a-Nova','Linhares da Beira','Manteigas','Meda','Pinhel','Sabugal','Seia','Trancoso','Vila Nova de Foz Coa'],
+  'Leiria':['Alcobaca','Alvaiazere','Ansiao','Batalha','Bombarral','Caldas da Rainha','Castanheira de Pera','Coimbra','Colares','Leiria','Marinha Grande','Nazare','Obidos','Pedrogao Grande','Peniche','Pombal','Porto de Mos','Rio Maior'],
+  'Lisboa':['Alenquer','Amadora','Arruda dos Vinhos','Azambuja','Cadaval','Cascais','Lisboa','Loures','Lourinha','Mafra','Odivelas','Oeiras','Sintra','Sobral de Monte Agraco','Torres Novas','Vila Franca de Xira'],
+  'Portalegre':['Alter do Chao','Arronches','Avis','Campo Maior','Castelo de Vide','Crato','Elvas','Fronteira','Gaviao','Marvao','Monforte','Nisa','Ponte de Sor','Portalegre','Sousel'],
+  'Porto':['Amarante','Baiao','Felgueiras','Gondomar','Lousada','Maia','Marco de Canaveses','Matosinhos','Oliveira do Douro','Paredes','Penafiel','Porto','Povoa de Varzim','Santo Tirso','Trofa','Valongo','Vila do Conde','Vila Nova de Gaia'],
+  'Santarem':['Almeirim','Alpiarca','Benavente','Cartaxo','Chamusca','Constancia','Coruche','Entroncamento','Ferreira do Zezomo','Marinha Maior','Rio Maior','Salvaterra de Magos','Santarem','Sardoal','Tomar','Torres Novas','Vila Nova da Barquinha'],
+  'Setubal':['Alcacer do Sal','Alcochete','Almada','Barreiro','Grandola','Moita','Montijo','Palmela','Santiago do Cacem','Seixal','Sesimbra','Setubal','Sines'],
+  'Viana do Castelo':['Arcos de Valdevez','Caminha','Melgaco','Moncao','Paredes de Coura','Ponte da Barca','Ponte de Lima','Valenca','Viana do Castelo','Vila Nova de Cerveira'],
+  'Vila Real':['Boticas','Chaves','Cinfaes','Mesao Frio','Mondim de Basto','Montalegre','Murca','Peso da Regua','Ribera de Pena','Santa Marta de Penaguiao','Valpacos','Vila Pouca de Aguiar','Vila Real','Vila Verde'],
+  'Viseu':['Aguiar da Beira','Carregal do Sal','Castro Daire','Cinfaes','Lamego','Mangualde','Moimenta da Beira','Mortagua','Nelas','Oliveira de Frades','Penalva do Castelo','Penedono','Resende','Sao Pedro do Sul','Satao','Sernancelhe','Tabuaco','Tondela','Vila Nova de Paiva','Viseu','Vouzela']
+};
+const DISTRICTS = Object.keys(LOCATIONS);
+
+function populateConcelhos(districtSelectId, concelhoSelectId) {
+  const d = document.getElementById(districtSelectId);
+  const c = document.getElementById(concelhoSelectId);
+  if (!d || !c) return;
+  const dist = d.value;
+  c.innerHTML = '<option value="">Selecionar concelho...</option>';
+  if (dist && LOCATIONS[dist]) {
+    LOCATIONS[dist].forEach(con => {
+      c.innerHTML += '<option value="'+con+'">'+con+'</option>';
+    });
+  }
+}
+
+const IMAGES = {
+  galinhas: ['https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&h=300&fit=crop','https://images.unsplash.com/photo-1523468662913-7e00d80bb28e?w=400&h=300&fit=crop'],
+  garnizos: ['https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=400&h=300&fit=crop'],
+  patos: ['https://images.unsplash.com/photo-1459682687441-7761439a709d?w=400&h=300&fit=crop'],
+  coelhos: ['https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=300&fit=crop'],
+  cabras: ['https://images.unsplash.com/photo-1524055988636-436cfa46e59e?w=400&h=300&fit=crop'],
+  ovelhas: ['https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=400&h=300&fit=crop'],
+  perus: ['https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400&h=300&fit=crop'],
+  caes: ['https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop'],
+  gatos: ['https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop'],
+  pequenos: ['https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=400&h=300&fit=crop'],
+  outros: ['https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop'],
+  adocoes: ['https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=300&fit=crop']
+};
+
+const CAT_IMAGES = {
+  galinhas:'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop',
+  garnizos:'https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=200&h=200&fit=crop',
+  patos:'https://images.unsplash.com/photo-1459682687441-7761439a709d?w=200&h=200&fit=crop',
+  coelhos:'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop',
+  cabras:'https://images.unsplash.com/photo-1524055988636-436cfa46e59e?w=200&h=200&fit=crop',
+  ovelhas:'https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=200&h=200&fit=crop',
+  perus:'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=200&h=200&fit=crop',
+  caes:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200&h=200&fit=crop',
+  gatos:'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop',
+  pequenos:'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200&h=200&fit=crop',
+  outros:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop',
+  adocoes:'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=200&h=200&fit=crop'
+};
+
+const BREEDS = {
+  galinhas: ['Preta Lusitanica','Vermelha Americana','Rhode Island','Sussex','Orpington','Leghorn'],
+  garnizos: ['Barcelos','Indian Game','Brahma','Cochin'],
+  patos: ['Pato Real','Muscovy','Khaki Campbell','Pekin'],
+  coelhos: ['Californiano','Neerlandes','Angora','Rex','Hotot'],
+  cabras: ['Saanen','Alpina','Moura','Serra da Estrela'],
+  ovelhas: ['Serra da Estrela','Churra','Merino','Charollese'],
+  perus: ['Branco Comercial','Narragansett','Bourbon Bronze'],
+  caes: ['Labrador','Pastor Alemao','Border Collie','Rafeiro do Alentejo','Cao de Gado Transmontano'],
+  gatos: ['Persa','Siamês','Europeu','Maine Coon','Ragdoll'],
+  pequenos: ['Coelho Anão','Hamster','Periquito','Calopsita'],
+  outros: ['Vacas','Porcos','Galinhas de Guinea','Faisoes'],
+  adocoes: ['Mistura','Sem raca definida','Mestico']
+};
+
+let listings = [
+  {id:1,title:'Galinha Preta Lusitanica',category:'galinhas',breed:'Preta Lusitanica',age:'8 meses',price:15,unit:'unidade',location:'Braga',deal:'venda',desc:'Galinhas poedeiras muito produtivas, alimentadas com milho e verde. Excelente adaptacao a quintas.',image:IMAGES.galinhas[0],userId:'user1',userName:'Manuel Silva',userPhone:'+351 912 345 678',date:'2025-01-15',active:true,adoptions:false,seeking:false},
+  {id:2,title:'Garnizo Barcelos Vermelho',category:'garnizos',breed:'Barcelos',age:'1 ano',price:25,unit:'unidade',location:'Porto',deal:'venda',desc:'Garnizos autenticos de Barcelos, criados em liberdade. Penas coloridas e muito vigorosos.',image:IMAGES.garnizos[0],userId:'user2',userName:'Joao Costa',userPhone:'+351 923 456 789',date:'2025-01-14',active:true,adoptions:false,seeking:false},
+  {id:3,title:'Patos Reais para Lago',category:'patos',breed:'Pato Real',age:'4 meses',price:20,unit:'unidade',location:'Aveiro',deal:'venda',desc:'Patos reais ideal para lagos e aquicultura. Machos e femeas disponiveis.',image:IMAGES.patos[0],userId:'user3',userName:'Antonio Ferreira',userPhone:'+351 934 567 890',date:'2025-01-13',active:true,adoptions:false,seeking:false},
+  {id:4,title:'Coelhos Californianos',category:'coelhos',breed:'Californiano',age:'3 meses',price:12,unit:'unidade',location:'Leiria',deal:'venda',desc:'Coelhos de raca Californiana, prontos para engorda ou reproducao. Docios e bem cuidados.',image:IMAGES.coelhos[0],userId:'user1',userName:'Manuel Silva',userPhone:'+351 912 345 678',date:'2025-01-12',active:true,adoptions:false,seeking:false},
+  {id:5,title:'Cabras Serra da Estrela',category:'cabras',breed:'Serra da Estrela',age:'2 anos',price:150,unit:'unidade',location:'Guarda',deal:'venda',desc:'Cabras leiteiras da Serra da Estrela, excelentes produtoras de leite para queijo.',image:IMAGES.cabras[0],userId:'user4',userName:'Maria Rodrigues',userPhone:'+351 945 678 901',date:'2025-01-11',active:true,adoptions:false,seeking:false},
+  {id:6,title:'Ovelhas Churra Alentejana',category:'ovelhas',breed:'Churra',age:'18 meses',price:120,unit:'unidade',location:'Evora',deal:'venda',desc:'Rebanho de ovelhas Churra, adaptadas ao clima alentejano. Boas para leite e carne.',image:IMAGES.ovelhas[0],userId:'user5',userName:'Pedro Santos',userPhone:'+351 956 789 012',date:'2025-01-10',active:true,adoptions:false,seeking:false},
+  {id:7,title:'Perus Brancos para Natal',category:'perus',breed:'Branco Comercial',age:'5 meses',price:35,unit:'unidade',location:'Viseu',deal:'venda',desc:'Perus brancos criados em regime extensivo, ideais para o periodo natalicio.',image:IMAGES.perus[0],userId:'user2',userName:'Joao Costa',userPhone:'+351 923 456 789',date:'2025-01-09',active:true,adoptions:false,seeking:false},
+  {id:8,title:'Labrador Retriever Filhotes',category:'caes',breed:'Labrador Retriever',age:'3 meses',price:500,unit:'unidade',location:'Lisboa',deal:'venda',desc:'Filhotes de Labrador Retriever, vacinados e desparasitados. Excelentes para famlias.',image:IMAGES.caes[0],userId:'user6',userName:'Sofia Mendes',userPhone:'+351 967 890 123',date:'2025-01-08',active:true,adoptions:false,seeking:false},
+  {id:9,title:'Gato Europeu Bebe',category:'gatos',breed:'Europeu',age:'2 meses',price:0,unit:'unidade',location:'Coimbra',deal:'venda',desc:'Gatinhos europeus para adocao. Vacinados e desparasitados. Apenas para familias responsaveis.',image:IMAGES.gatos[0],userId:'user3',userName:'Antonio Ferreira',userPhone:'+351 934 567 890',date:'2025-01-07',active:true,adoptions:false,seeking:false},
+  {id:10,title:'Hamster Sirio Dourado',category:'pequenos',breed:'Hamster Sirio',age:'6 semanas',price:8,unit:'unidade',location:'Faro',deal:'venda',desc:'Hamsters Sirius dourados, ideais como primeiros animais de estimacao para criancas.',image:IMAGES.pequenos[0],userId:'user4',userName:'Maria Rodrigues',userPhone:'+351 945 678 901',date:'2025-01-06',active:true,adoptions:false,seeking:false},
+  {id:11,title:'Galinha Americana Vermelha',category:'galinhas',breed:'Vermelha Americana',age:'6 meses',price:14,unit:'unidade',location:'Setubal',deal:'venda',desc:'Poeiras americanas vermelhas, muito produtivas e resistentes. 5 a 6 ovos por semana.',image:IMAGES.galinhas[1],userId:'user5',userName:'Pedro Santos',userPhone:'+351 956 789 012',date:'2025-01-05',active:true,adoptions:false,seeking:false},
+  {id:12,title:'Cabra Alpina para Leite',category:'cabras',breed:'Alpina',age:'3 anos',price:180,unit:'unidade',location:'Braganca',deal:'venda',desc:'Cabra Alpina de alta producao leiteira. 3 litros por dia em media.',image:IMAGES.cabras[0],userId:'user6',userName:'Sofia Mendes',userPhone:'+351 967 890 123',date:'2025-01-04',active:true,adoptions:false,seeking:false},
+  {id:13,title:'Coelho Rex Marrom',category:'coelhos',breed:'Rex',age:'4 meses',price:15,unit:'unidade',location:'Portalegre',deal:'troca',desc:'Coelhos Rex marrom, pelagem macia. Troco por galinhas ou outros animais.',image:IMAGES.coelhos[0],userId:'user1',userName:'Manuel Silva',userPhone:'+351 912 345 678',date:'2025-01-03',active:true,adoptions:false,seeking:false},
+  {id:14,title:'Pato Khaki Campbell Femea',category:'patos',breed:'Khaki Campbell',age:'6 meses',price:18,unit:'unidade',location:'Viana do Castelo',deal:'venda',desc:'Femeas Khaki Campbell excelentes para producao de ovos. 300+ ovos por ano.',image:IMAGES.patos[0],userId:'user2',userName:'Joao Costa',userPhone:'+351 923 456 789',date:'2025-01-02',active:true,adoptions:false,seeking:false},
+  {id:15,title:'Ca Adocao - Pastoressa',category:'adocoes',breed:'Mestico',age:'4 anos',price:0,unit:'unidade',location:'Santarem',deal:'venda',desc:'Cadela Pastoressa abandonada procura familia amorosa. Muito doce e companheira.',image:IMAGES.adocoes[0],userId:'user3',userName:'Antonio Ferreira',userPhone:'+351 934 567 890',date:'2025-01-01',active:true,adoptions:true,seeking:false},
+  {id:16,title:'Periquito Australiano',category:'pequenos',breed:'Periquito',age:'3 meses',price:25,unit:'par',location:'Vila Real',deal:'venda',desc:'Casal de periquitos australianos, criados em gaiola ampla. Sao mansos e cantam bem.',image:IMAGES.pequenos[0],userId:'user4',userName:'Maria Rodrigues',userPhone:'+351 945 678 901',date:'2024-12-30',active:true,adoptions:false,seeking:false},
+  {id:17,title:'Gato Mestico Adocao',category:'adocoes',breed:'Mistura',age:'2 meses',price:0,unit:'unidade',location:'Lisboa',deal:'venda',desc:'Conjunto de 4 gatinhos para adocao. Ja vacinados e com cartao de saude.',image:IMAGES.gatos[0],userId:'user5',userName:'Pedro Santos',userPhone:'+351 956 789 012',date:'2024-12-28',active:true,adoptions:true,seeking:false},
+  {id:18,title:'Garnizo Indian Game',category:'garnizos',breed:'Indian Game',age:'8 meses',price:30,unit:'unidade',location:'Castelo Branco',deal:'venda',desc:'Garnizos Indian Game, raca pesada para producao de carne. Excelente rendimento.',image:IMAGES.garnizos[0],userId:'user6',userName:'Sofia Mendes',userPhone:'+351 967 890 123',date:'2024-12-25',active:true,adoptions:false,seeking:false}
+];
+
+let seekListings = [
+  {id:101,category:'galinhas',breed:'Qualquer',age:'Adultas',desc:'Procuro galinhas poedeiras para quintinha em Braga. Preferencia para racas resistentes.',location:'Braga',price:0,userId:'user4',userName:'Maria Rodrigues',userPhone:'+351 945 678 901',date:'2025-01-15',active:true},
+  {id:102,category:'caes',breed:'Rafeiro do Alentejo',age:'Jovem',desc:'Procuramos um Rafeiro do Alentejo para guarda de rebanho. Zona de Evora.',location:'Evora',price:300,userId:'user5',userName:'Pedro Santos',userPhone:'+351 956 789 012',date:'2025-01-14',active:true},
+  {id:103,category:'coelhos',breed:'Qualquer',age:'3-6 meses',desc:'Procuro coelhos para engorda. Zona de Leiria ou proximidades.',location:'Leiria',price:50,userId:'user1',userName:'Manuel Silva',userPhone:'+351 912 345 678',date:'2025-01-13',active:true},
+  {id:104,category:'cabras',breed:'Serra da Estrela',age:'Adultas',desc:'Procuro cabra Serra da Estrela para leite. Compradora fiel, zona de Guarda.',location:'Guarda',price:200,userId:'user2',userName:'Joao Costa',userPhone:'+351 923 456 789',date:'2025-01-12',active:true},
+  {id:105,category:'gatos',breed:'Europeu',age:'2-4 meses',desc:'Procuramos gatinhos para adocao em familia. Zona de Lisboa.',location:'Lisboa',price:0,userId:'user6',userName:'Sofia Mendes',userPhone:'+351 967 890 123',date:'2025-01-11',active:true}
+];
+
+let users = [
+  {id:'user1',name:'Manuel Silva',email:'user@test.pt',phone:'+351 912 345 678',location:'Braga',password:'user123',role:'user',joined:'2024-06-15'},
+  {id:'user2',name:'Joao Costa',email:'joao@test.pt',phone:'+351 923 456 789',location:'Porto',password:'pass123',role:'user',joined:'2024-07-20'},
+  {id:'user3',name:'Antonio Ferreira',email:'antonio@test.pt',phone:'+351 934 567 890',location:'Aveiro',password:'pass123',role:'user',joined:'2024-08-10'},
+  {id:'user4',name:'Maria Rodrigues',email:'maria@test.pt',phone:'+351 945 678 901',location:'Guarda',password:'pass123',role:'user',joined:'2024-09-05'},
+  {id:'user5',name:'Pedro Santos',email:'pedro@test.pt',phone:'+351 956 789 012',location:'Evora',password:'pass123',role:'user',joined:'2024-10-01'},
+  {id:'user6',name:'Admin Quintinha',email:'admin@aquintinha.pt',phone:'+351 967 890 123',location:'Lisboa',password:'admin123',role:'admin',joined:'2024-01-01'}
+];
+
+let currentUser = null;
+let favorites = JSON.parse(localStorage.getItem('aq_favorites') || '[]');
+let lang = localStorage.getItem('aq_lang') || 'pt';
+let currentLang = lang;
+let currentWizardStep = 1;
+let editingListingId = null;
+let reportListingId = null;
+
+
+const TRANSLATIONS = {
+  pt: {
+    nav_home: 'Início', nav_listings: 'Animais', nav_adoptions: 'Adoções', nav_how: 'Como Funciona', nav_contacts: 'Contactos',
+    nav_sell: 'Vender Animal', nav_login: 'Entrar', nav_seek: 'Procuro',
+    menu_account: 'A Minha Conta', menu_listings: 'Os Meus Anúncios', menu_favorites: 'Favoritos', menu_logout: 'Sair',
+    hero_title: 'Animais de Campo,', hero_sub: 'com carinho e confiança',
+    hero_desc: 'Encontre ou anuncie animais da quinta perto de si.',
+    hero_btn1: 'Ver Animais', hero_btn2: 'Quero Vender',
+    cat_title: 'Categorias', cat_sub: 'Encontre o que procura',
+    filter_search: 'Procurar animais...', filter_cats: 'Todas as categorias', filter_locs: 'Todos os locais',
+    filter_deal: 'Venda e Troca', filter_btn: 'Procurar',
+    listings_title: 'Animais Disponíveis', listings_sub: 'Os melhores para si',
+    seeking_title: 'Quem Procura', seeking_sub: 'Pessoas que procuram animais específicos', seeking_btn: 'Ver Todos',
+    how_title: 'Como Funciona', how_sub: 'Simples, seguro e entre pessoas!',
+    how_step1: 'Publique o seu anúncio', how_step1d: 'Adicione fotos e detalhes do seu animal em poucos minutos.',
+    how_step2: 'Encontre interessados', how_step2d: 'Pessoas da sua zona vão ver o seu anúncio e entrar em contacto.',
+    how_step3: 'Combine a entrega', how_step3d: 'Marque o local e horário que melhor lhe convier.',
+    trust_title: 'A sua confiança é a nossa prioridade',
+    trust1: 'Anúncios Verificados', trust2: 'Próximo de Si', trust3: 'Contacto Direto',
+    trust4: 'Feito com Carinho', trust5: 'Preços Justos',
+    footer_desc: 'Classificados de animais de campo em Portugal.',
+    footer_contacts: 'Contactos', footer_links: 'Links Úteis', footer_social: 'Redes Sociais',
+    footer_quote: 'Juntos por uma quinta mais próxima!',
+    all_listings: 'Todos os Animais',
+    adoptions_title: 'Adoções', adoptions_sub: 'Dê um lar a um animal que precisa de si',
+    seeking_page_title: 'Procuro Animais', seeking_page_sub: 'Pessoas que procuram animais específicos', seeking_new: 'Novo Pedido',
+    account_title: 'A Minha Conta', account_dashboard: 'Dashboard', account_mylistings: 'Os Meus Anúncios',
+    account_favorites: 'Favoritos', account_profile: 'Perfil',
+    new_listing: 'Novo Anúncio', create_publish: 'Publicar Anúncio', create_next: 'Próximo', create_back: 'Voltar',
+    auth_login: 'Entrar', auth_register: 'Registar', auth_demo: 'Demo: admin@aquintinha.pt / admin123 e user@test.pt / user123',
+    report_title: 'Reportar Anúncio', report_btn: 'Reportar', report_cancel: 'Cancelar',
+    seek_title: 'Procuro Animal', seek_desc: 'Indique que animal procura e as pessoas entram em contacto consigo.',
+    seek_publish: 'Publicar Pedido', seek_cat: 'Que tipo de animal procura?',
+    admin_title: 'Painel Admin', admin_listings: 'Anúncios', admin_users: 'Utilizadores',
+    admin_banners: 'Banners', admin_pages: 'Páginas', admin_reports: 'Reports',
+    save: 'Guardar', publish: 'Publicar', cancel: 'Cancelar', delete: 'Apagar', edit: 'Editar'
+  },
+  en: {
+    nav_home: 'Home', nav_listings: 'Animals', nav_adoptions: 'Adoptions', nav_how: 'How It Works', nav_contacts: 'Contacts',
+    nav_sell: 'Sell Animal', nav_login: 'Login', nav_seek: 'Seeking',
+    menu_account: 'My Account', menu_listings: 'My Listings', menu_favorites: 'Favorites', menu_logout: 'Logout',
+    hero_title: 'Farm Animals,', hero_sub: 'with care and trust',
+    hero_desc: 'Find or list farm animals near you.',
+    hero_btn1: 'See Animals', hero_btn2: 'I Want to Sell',
+    cat_title: 'Categories', cat_sub: 'Find what you are looking for',
+    filter_search: 'Search animals...', filter_cats: 'All categories', filter_locs: 'All locations',
+    filter_deal: 'Sale and Trade', filter_btn: 'Search',
+    listings_title: 'Available Animals', listings_sub: 'The best for you',
+    seeking_title: 'Who Is Looking', seeking_sub: 'People looking for specific animals', seeking_btn: 'See All',
+    how_title: 'How It Works', how_sub: 'Simple, safe and between people!',
+    how_step1: 'Post your ad', how_step1d: 'Add photos and details of your animal in minutes.',
+    how_step2: 'Find interested buyers', how_step2d: 'People in your area will see your ad and contact you.',
+    how_step3: 'Arrange delivery', how_step3d: 'Set the location and time that suits you best.',
+    trust_title: 'Your trust is our priority',
+    trust1: 'Verified Ads', trust2: 'Near You', trust3: 'Direct Contact',
+    trust4: 'Made with Care', trust5: 'Fair Prices',
+    footer_desc: 'Farm animal classifieds in Portugal.',
+    footer_contacts: 'Contacts', footer_links: 'Useful Links', footer_social: 'Social Media',
+    footer_quote: 'Together for a closer farm!',
+    all_listings: 'All Animals',
+    adoptions_title: 'Adoptions', adoptions_sub: 'Give a home to an animal in need',
+    seeking_page_title: 'Seeking Animals', seeking_page_sub: 'People looking for specific animals', seeking_new: 'New Request',
+    account_title: 'My Account', account_dashboard: 'Dashboard', account_mylistings: 'My Listings',
+    account_favorites: 'Favorites', account_profile: 'Profile',
+    new_listing: 'New Ad', create_publish: 'Publish Ad', create_next: 'Next', create_back: 'Back',
+    auth_login: 'Login', auth_register: 'Register', auth_demo: 'Demo: admin@aquintinha.pt / admin123 and user@test.pt / user123',
+    report_title: 'Report Ad', report_btn: 'Report', report_cancel: 'Cancel',
+    seek_title: 'Seeking Animal', seek_desc: 'Specify what animal you are looking for and people will contact you.',
+    seek_publish: 'Publish Request', seek_cat: 'What type of animal are you looking for?',
+    admin_title: 'Admin Panel', admin_listings: 'Listings', admin_users: 'Users',
+    admin_banners: 'Banners', admin_pages: 'Pages', admin_reports: 'Reports',
+    save: 'Save', publish: 'Publish', cancel: 'Cancel', delete: 'Delete', edit: 'Edit'
+  }
+};
+
+function t(key) { return TRANSLATIONS[currentLang][key] || key; }
+
+function toggleLang() {
+  currentLang = currentLang === 'pt' ? 'en' : 'pt';
+  localStorage.setItem('aq_lang', currentLang);
+  document.getElementById('langBtn').textContent = currentLang === 'pt' ? 'EN' : 'PT';
+  applyTranslations();
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+      el.textContent = TRANSLATIONS[currentLang][key];
+    }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+      el.placeholder = TRANSLATIONS[currentLang][key];
+    }
+  });
+  document.documentElement.lang = currentLang;
+}
+
+function showNotification(msg, type='success') {
+  const n = document.getElementById('notification');
+  n.textContent = msg;
+  n.className = 'notification ' + type + ' show';
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function toggleMobileMenu() {
+  const m = document.getElementById('mobileMenu');
+  const h = document.getElementById('hamburger');
+  m.classList.toggle('hide');
+  h.classList.toggle('active');
+}
+
+function toggleUserMenu() {
+  document.getElementById('userDropdown').classList.toggle('hide');
+}
+
+function closeUserMenu() {
+  document.getElementById('userDropdown').classList.add('hide');
+}
+
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
+  if (target) target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (page === 'listings') renderAllListings();
+  if (page === 'adoptions') renderAdoptions();
+  if (page === 'seeking') renderSeeking();
+  if (page === 'account') renderAccount();
+  if (page === 'admin') renderAdmin();
+  if (page === 'home') { renderCategories(); renderHomeListings(); }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function requireAuth(modalId) {
+  if (!currentUser) {
+    openModal('authModal');
+    showNotification('Precisa de entrar primeiro.', 'error');
+    return;
+  }
+  openModal(modalId);
+}
+
+function showAuthTab(tab) {
+  document.getElementById('authLoginForm').classList.toggle('hide', tab !== 'login');
+  document.getElementById('authRegisterForm').classList.toggle('hide', tab !== 'register');
+  document.getElementById('authLoginTab').classList.toggle('active', tab === 'login');
+  document.getElementById('authRegisterTab').classList.toggle('active', tab === 'register');
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  if (!email || !pass) { showNotification('Preencha todos os campos.', 'error'); return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(cred => {
+      closeModal('authModal');
+      showNotification('Bem-vindo!');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+    })
+    .catch(err => {
+      let msg = 'Credenciais inválidas.';
+      if (err.code === 'auth/user-not-found') msg = 'Utilizador não encontrado.';
+      if (err.code === 'auth/wrong-password') msg = 'Password incorreta.';
+      if (err.code === 'auth/too-many-requests') msg = 'Demasiadas tentativas. Tente mais tarde.';
+      showNotification(msg, 'error');
+    });
+}
+
+function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const location = document.getElementById('regLocation').value;
+  const concelho = document.getElementById('regConcelho')?.value || '';
+  const pass = document.getElementById('regPassword').value;
+  const pass2 = document.getElementById('regPassword2').value;
+  if (!name || !email || !pass) { showNotification('Preencha nome, email e password.', 'error'); return; }
+  if (pass !== pass2) { showNotification('Passwords não coincidem.', 'error'); return; }
+  if (pass.length < 6) { showNotification('Password deve ter pelo menos 6 caracteres.', 'error'); return; }
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(cred => {
+      return db.collection('users').doc(cred.user.uid).set({
+        name, email, phone, location: concelho || location,
+        role: 'user', status: 'active',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    })
+    .then(() => {
+      closeModal('authModal');
+      showNotification('Conta criada com sucesso!');
+      ['regName','regEmail','regPhone','regPassword','regPassword2'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+      });
+    })
+    .catch(err => {
+      let msg = 'Erro ao criar conta.';
+      if (err.code === 'auth/email-already-in-use') msg = 'Email já registado.';
+      if (err.code === 'auth/invalid-email') msg = 'Email inválido.';
+      if (err.code === 'auth/weak-password') msg = 'Password fraca (mínimo 6 caracteres).';
+      showNotification(msg, 'error');
+    });
+}
+
+function logout() {
+  auth.signOut().then(() => {
+    currentUser = null;
+    userProfile = null;
+    updateUI();
+    navigateTo('home');
+    closeUserMenu();
+    showNotification('Sessão encerrada.');
+  });
+}
+
+function updateUI() {
+  const ua = document.getElementById('userArea');
+  const um = document.getElementById('userMenuArea');
+  const al = document.querySelector('.admin-link');
+  if (currentUser) {
+    ua.classList.add('hide');
+    um.classList.remove('hide');
+    const displayName = userProfile ? userProfile.name : (currentUser.email || 'U');
+    document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
+    if (userProfile && userProfile.role === 'admin') al.classList.remove('hide');
+    else al.classList.add('hide');
+  } else {
+    ua.classList.remove('hide');
+    um.classList.add('hide');
+  }
+}
+
+function renderCategories() {
+  const g = document.getElementById('categoriesGrid');
+  if (!g) return;
+  g.innerHTML = CATEGORIES.map(c =>
+    '<div class="category-card p-4 text-center cursor-pointer" onclick="filterByCategory(\''+c.id+'\')">' +
+    '<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-amarelo-mostarda mx-auto mb-2">' +
+    '<img src="'+CAT_IMAGES[c.id]+'" alt="'+c.name+'" class="w-full h-full object-cover" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\''+c.emoji+'\'">' +
+    '</div>' +
+    '<p class="text-creme text-xs font-semibold">'+c.name+'</p></div>'
+  ).join('');
+  lucide.createIcons();
+}
+
+function filterByCategory(catId) {
+  navigateTo('listings');
+  document.getElementById('allFilterCategory').value = catId;
+  applyAllFilters();
+}
+
+async function renderHomeListings() {
+  try {
+    const g = document.getElementById('homeListings');
+    const sg = document.getElementById('homeSeeking');
+
+    const snap = await db.collection('listings').where('active', '==', true).orderBy('createdAt', 'desc').limit(8).get();
+    listings = [];
+    snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+
+    if (g) {
+      if (listings.length === 0) {
+        g.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400 text-sm">Nenhum anuncio disponivel.</div>';
+      } else {
+        g.innerHTML = listings.map(l => renderListingCard(l)).join('');
+      }
+    }
+
+    if (sg) {
+      const seekSnap = await db.collection('seekings').where('active', '==', true).orderBy('createdAt', 'desc').limit(4).get();
+      seekListings = [];
+      seekSnap.forEach(doc => seekListings.push({ id: doc.id, ...doc.data() }));
+      if (seekListings.length === 0) {
+        sg.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400 text-sm">Nenhum pedido de procura ativo.</div>';
+      } else {
+        sg.innerHTML = seekListings.map(s => renderSeekCard(s)).join('');
+      }
+    }
+
+    lucide.createIcons();
+  } catch (e) {
+    console.error('renderHomeListings error:', e);
+  }
+}
+
+function renderListingCard(l) {
+  const isFav = favorites.includes(l.id);
+  const cat = CATEGORIES.find(c => c.id === l.category);
+  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover cursor-pointer">' +
+    '<div class="relative listing-image bg-gray-200">' +
+    '<img src="'+l.image+'" alt="'+l.title+'" class="w-full h-full object-cover" onerror="this.style.display=\'none\'">' +
+    '<button onclick="event.stopPropagation();toggleFavorite('+l.id+')" class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition '+(isFav?'active':'')+'"><i data-lucide="heart" class="w-4 h-4"></i></button>' +
+    (l.deal==='troca'?'<span class="absolute top-3 left-3 bg-amarelo-mostarda text-verde-escuro text-xs font-bold px-2 py-0.5 rounded-full">TROCA</span>':'') +
+    (l.adoptions?'<span class="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">ADOCAO</span>':'') +
+    '</div>' +
+    '<div class="p-4">' +
+    '<h3 class="font-bold text-sm text-verde-escuro mb-1 line-clamp-1">'+l.title+'</h3>' +
+    '<p class="text-xs text-gray-500 mb-1">'+l.breed+' &middot; '+l.age+'</p>' +
+    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i data-lucide="map-pin" class="w-3 h-3"></i> '+l.location+'</div>' +
+    '<p class="font-bold text-amarelo-escuro text-sm mb-3">'+(l.price===0?'Gratis':l.price+' / '+l.unit)+'</p>' +
+    '<button onclick="event.stopPropagation();openDetail('+l.id+')" class="w-full btn-green py-2 rounded-lg text-xs">Ver anuncio</button>' +
+    '</div></div>';
+}
+
+function openDetail(id) {
+  const l = listings.find(x => x.id === id);
+  if (!l) return;
+  const isFav = favorites.includes(l.id);
+  const cat = CATEGORIES.find(c => c.id === l.category);
+  const c = document.getElementById('detailContent');
+  c.innerHTML =
+    '<img src="'+l.image+'" alt="'+l.title+'" class="w-full h-64 object-cover" onerror="this.style.display=\'none\'">' +
+    '<div class="p-6">' +
+    '<div class="flex justify-between items-start mb-4">' +
+    '<div><h2 class="text-xl font-bold text-verde-escuro">'+l.title+'</h2>' +
+    '<p class="text-sm text-gray-500">'+l.breed+' &middot; '+l.age+'</p></div>' +
+    '<button onclick="toggleFavorite('+l.id+');openDetail('+l.id+')" class="favorite-btn w-10 h-10 border rounded-full flex items-center justify-center hover:bg-gray-100 transition '+(isFav?'active':'')+'"><i data-lucide="heart" class="w-5 h-5"></i></button>' +
+    '</div>' +
+    '<div class="grid grid-cols-2 gap-3 mb-4">' +
+    '<div class="bg-creme-escuro rounded-lg p-3"><p class="text-xs text-gray-500">Preco</p><p class="font-bold text-verde-escuro">'+(l.price===0?'Gratis':l.price+' / '+l.unit)+'</p></div>' +
+    '<div class="bg-creme-escuro rounded-lg p-3"><p class="text-xs text-gray-500">Tipo</p><p class="font-bold text-verde-escuro capitalize">'+l.deal+'</p></div>' +
+    '<div class="bg-creme-escuro rounded-lg p-3"><p class="text-xs text-gray-500">Localizacao</p><p class="font-bold text-verde-escuro">'+l.location+'</p></div>' +
+    '<div class="bg-creme-escuro rounded-lg p-3"><p class="text-xs text-gray-500">Categoria</p><p class="font-bold text-verde-escuro">'+(cat?cat.name:l.category)+'</p></div>' +
+    '</div>' +
+    '<div class="mb-4"><h4 class="font-bold text-sm text-verde-escuro mb-1">Descricao</h4><p class="text-sm text-gray-600">'+l.desc+'</p></div>' +
+    '<div class="border-t pt-4 mt-4">' +
+    '<div class="flex items-center gap-3 mb-3">' +
+    '<div class="w-10 h-10 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold">'+l.userName.charAt(0)+'</div>' +
+    '<div><p class="font-semibold text-sm">'+l.userName+'</p><p class="text-xs text-gray-500">'+l.userPhone+'</p></div>' +
+    '</div>' +
+    '<div class="flex gap-3">' +
+    '<a href="tel:'+l.userPhone+'" class="flex-1 btn-green py-2.5 rounded-lg text-sm text-center flex items-center justify-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> Ligar</a>' +
+    '<a href="https://wa.me/'+l.userPhone.replace(/[^0-9]/g,'')+'" target="_blank" class="flex-1 bg-green-500 text-white py-2.5 rounded-lg text-sm text-center font-semibold flex items-center justify-center gap-2 hover:bg-green-600 transition"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>' +
+    '</div>' +
+    '<button onclick="reportListing('+l.id+')" class="w-full mt-3 text-xs text-gray-400 hover:text-red-500 transition">Reportar anuncio</button>' +
+    '</div></div>';
+  openModal('detailModal');
+  lucide.createIcons();
+}
+
+function toggleFavorite(id) {
+  if (!currentUser) { openModal('authModal'); showNotification('Faça login para guardar favoritos.', 'error'); return; }
+  const idx = favorites.indexOf(id);
+  if (idx > -1) { favorites.splice(idx, 1); showNotification('Removido dos favoritos.'); }
+  else { favorites.push(id); showNotification('Adicionado aos favoritos!'); }
+  localStorage.setItem('aq_favorites', JSON.stringify(favorites));
+  renderHomeListings();
+  renderAllListings();
+  renderAdoptions();
+}
+
+function reportListing(id) {
+  reportListingId = id;
+  document.getElementById('reportReason').value = '';
+  closeModal('detailModal');
+  openModal('reportModal');
+}
+
+function submitReport() {
+  const reason = document.getElementById('reportReason').value.trim();
+  if (!reason) { showNotification('Indique o motivo.', 'error'); return; }
+  db.collection('reports').add({listingId: reportListingId, reason, date: firebase.firestore.FieldValue.serverTimestamp(), status: 'pendente'})
+    .then(() => { closeModal('reportModal'); showNotification('Reporte enviado. Obrigado!'); })
+    .catch(e => showNotification('Erro ao enviar reporte.', 'error'));
+}
+
+async function renderAllListings() {
+  try {
+    const g = document.getElementById('allListings');
+    if (!g) return;
+    renderFilterOptions();
+
+    const snap = await db.collection('listings').where('active', '==', true).orderBy('createdAt', 'desc').get();
+    listings = [];
+    snap.forEach(doc => listings.push({ id: doc.id, ...doc.data() }));
+
+    const filtered = getFiltered('allFilter');
+    if (filtered.length === 0) {
+      g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhum anuncio encontrado.</div>';
+    } else {
+      g.innerHTML = filtered.map(l => renderListingCard(l)).join('');
+    }
+    lucide.createIcons();
+  } catch (e) {
+    console.error('renderAllListings error:', e);
+  }
+}
+
+async function renderAdoptions() {
+  try {
+    const g = document.getElementById('adoptionListings');
+    if (!g) return;
+
+    const snap = await db.collection('listings').where('active', '==', true).where('category', '==', 'adocoes').get();
+    const items = [];
+    snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+
+    if (items.length === 0) {
+      g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhuma adocao disponivel.</div>';
+    } else {
+      g.innerHTML = items.map(l => renderListingCard(l)).join('');
+    }
+    lucide.createIcons();
+  } catch (e) {
+    console.error('renderAdoptions error:', e);
+  }
+}
+function applyAdoptFilters() {
+  const search = (document.getElementById('adoptFilterSearch')?.value || '').toLowerCase();
+  const cat = document.getElementById('adoptFilterCategory')?.value || '';
+  const loc = document.getElementById('adoptFilterLocation')?.value || '';
+  const g = document.getElementById('adoptionListings');
+  if (!g) return;
+  let adListings = listings.filter(l => l.active && (l.adoptions || l.price === 0));
+  if (search) adListings = adListings.filter(l => l.title.toLowerCase().includes(search) || l.desc.toLowerCase().includes(search));
+  if (cat) adListings = adListings.filter(l => l.category === cat);
+  if (loc) adListings = adListings.filter(l => l.location === loc);
+  if (adListings.length === 0) {
+    g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhuma adocao encontrada.</div>';
+  } else {
+    g.innerHTML = adListings.map(l => renderListingCard(l)).join('');
+  }
+  lucide.createIcons();
+}
+
+function renderFilterOptions() {
+  ['allFilterCategory','filterCategory','adoptFilterCategory','seekFilterCategory'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.value;
+    el.innerHTML = '<option value="">Todas</option>' + CATEGORIES.map(c => '<option value="'+c.id+'">'+c.name+'</option>').join('');
+    el.value = val;
+  });
+  const createCat = document.getElementById('createCategory');
+  if (createCat) {
+    createCat.innerHTML = '<option value="">Selecionar categoria...</option>' + CATEGORIES.map(c => '<option value="'+c.id+'">'+c.emoji+' '+c.name+'</option>').join('');
+  }
+  const seekCat = document.getElementById('seekCategory');
+  if (seekCat) {
+    seekCat.innerHTML = '<option value="">Que tipo de animal procura?</option>' + CATEGORIES.map(c => '<option value="'+c.id+'">'+c.emoji+' '+c.name+'</option>').join('');
+  }
+  const locs = ['allFilterLocation','filterLocation','profileLocation','seekLocation','adoptFilterLocation','seekFilterLocation'];
+  locs.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.value;
+    el.innerHTML = '<option value="">Todos os locais</option>' + DISTRICTS.map(d => '<option value="'+d+'">'+d+'</option>').join('');
+    el.value = val;
+  });
+  ['createLocation','regLocation'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.value;
+    el.innerHTML = '<option value="">Selecionar distrito...</option>' + DISTRICTS.map(d => '<option value="'+d+'">'+d+'</option>').join('');
+    el.value = val;
+  });
+}
+
+function getFiltered(prefix) {
+  const search = document.getElementById(prefix+'Search')?.value.toLowerCase() || '';
+  const cat = document.getElementById(prefix+'Category')?.value || '';
+  const loc = document.getElementById(prefix+'Location')?.value || '';
+  const deal = document.getElementById(prefix+'Deal')?.value || '';
+  return listings.filter(l => {
+    if (!l.active) return false;
+    if (search && !l.title.toLowerCase().includes(search) && !l.breed.toLowerCase().includes(search) && !l.desc.toLowerCase().includes(search)) return false;
+    if (cat && l.category !== cat) return false;
+    if (loc && l.location !== loc) return false;
+    if (deal && l.deal !== deal) return false;
+    return true;
+  });
+}
+
+function applyFilters() {
+  const g = document.getElementById('homeListings');
+  if (!g) return;
+  const filtered = getFiltered('filter');
+  if (filtered.length === 0) {
+    g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhum anuncio encontrado.</div>';
+  } else {
+    g.innerHTML = filtered.map(l => renderListingCard(l)).join('');
+  }
+  lucide.createIcons();
+}
+
+function applyAllFilters() { renderAllListings(); }
+
+// WIZARD
+function wizardNext(step) {
+  if (step === 1) {
+    const cat = document.getElementById('createCategory').value;
+    const title = document.getElementById('createTitle').value.trim();
+    if (!cat || !title) { showNotification('Preencha categoria e titulo.', 'error'); return; }
+  }
+  if (step === 2) {
+    updateSummary();
+  }
+  document.getElementById('wizard'+step).classList.remove('active');
+  document.getElementById('wizard'+(step+1)).classList.add('active');
+  currentWizardStep = step + 1;
+  updateWizardIndicators();
+}
+
+function wizardPrev(step) {
+  document.getElementById('wizard'+step).classList.remove('active');
+  document.getElementById('wizard'+(step-1)).classList.add('active');
+  currentWizardStep = step - 1;
+  updateWizardIndicators();
+}
+
+function updateWizardIndicators() {
+  document.querySelectorAll('.wizard-indicator').forEach((el, i) => {
+    el.className = 'wizard-indicator w-8 h-2 rounded-full ' + (i < currentWizardStep ? 'bg-amarelo-mostarda' : 'bg-gray-300');
+  });
+}
+
+function updateSummary() {
+  const s = document.getElementById('createSummary');
+  const cat = CATEGORIES.find(c => c.id === document.getElementById('createCategory').value);
+  const deal = document.querySelector('input[name="dealType"]:checked')?.value || 'venda';
+  const hasImage = uploadedImageData || document.getElementById('createImage').value.trim();
+  s.innerHTML =
+    '<p><strong>Categoria:</strong> '+(cat?cat.name:'-')+'</p>' +
+    '<p><strong>Titulo:</strong> '+document.getElementById('createTitle').value+'</p>' +
+    '<p><strong>Raca:</strong> '+document.getElementById('createBreed').value+'</p>' +
+    '<p><strong>Idade:</strong> '+document.getElementById('createAge').value+'</p>' +
+    '<p><strong>Preco:</strong> '+(document.getElementById('createPrice').value||'0')+' / '+document.getElementById('createUnit').value+'</p>' +
+    '<p><strong>Tipo:</strong> '+deal+'</p>' +
+    '<p><strong>Localizacao:</strong> '+(document.getElementById('createConcelho').value || document.getElementById('createLocation').value || '-')+'</p>' +
+    '<p><strong>Foto:</strong> '+(hasImage?'Sim':'Sem foto')+'</p>';
+}
+
+function getAgeInWeeks(ageStr) {
+  if (!ageStr) return 0;
+  const lower = ageStr.toLowerCase();
+  const num = parseInt(lower);
+  if (isNaN(num)) return 999;
+  if (lower.includes('semana')) return num;
+  if (lower.includes('mes')) return num * 4;
+  if (lower.includes('ano')) return num * 52;
+  return num * 4;
+}
+
+async function submitListing() {
+  try {
+    const location = document.getElementById('createConcelho').value || document.getElementById('createLocation').value;
+    if (!location) { showNotification('Selecione a localizacao.', 'error'); return; }
+    const deal = document.querySelector('input[name="dealType"]:checked')?.value || 'venda';
+    const cat = document.getElementById('createCategory').value;
+    const breed = document.getElementById('createBreed').value.trim();
+    const age = document.getElementById('createAge').value.trim();
+
+    if ((cat === 'caes' || cat === 'gatos')) {
+      if (!breed) { showNotification('Raca e obrigatoria para caes e gatos.', 'error'); return; }
+      const weeks = getAgeInWeeks(age);
+      if (weeks < 8) { showNotification('Idade minima para caes e gatos e 8 semanas.', 'error'); return; }
+    }
+
+    let imageUrl = '';
+    const fileInput = document.getElementById('createImageFile');
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      const storageRef = storage.ref('listings/' + Date.now() + '_' + file.name);
+      const snapshot = await storageRef.put(file);
+      imageUrl = await snapshot.ref.getDownloadURL();
+    } else {
+      const imgArr = IMAGES[cat] || IMAGES.outros;
+      imageUrl = document.getElementById('createImage').value.trim() || imgArr[Math.floor(Math.random() * imgArr.length)];
+    }
+
+    const listingData = {
+      title: document.getElementById('createTitle').value.trim(),
+      category: cat,
+      breed: breed || 'N/D',
+      age: age || 'N/D',
+      price: parseFloat(document.getElementById('createPrice').value) || 0,
+      unit: document.getElementById('createUnit').value,
+      location: location,
+      deal: deal,
+      desc: document.getElementById('createDesc').value.trim(),
+      image: imageUrl,
+      userId: currentUser.uid,
+      userName: userProfile ? userProfile.name : currentUser.email,
+      userPhone: userProfile ? (userProfile.phone || '') : '',
+      active: true,
+      adoptions: cat === 'adocoes',
+      seeking: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (editingListingId) {
+      await db.collection('listings').doc(editingListingId).update(listingData);
+    } else {
+      await db.collection('listings').add(listingData);
+    }
+
+    closeModal('createModal');
+    editingListingId = null;
+    showNotification('Anuncio publicado com sucesso!');
+    document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('wizard1').classList.add('active');
+    currentWizardStep = 1;
+    updateWizardIndicators();
+    ['createTitle','createDesc','createBreed','createAge','createPrice','createImage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('createCategory').value = '';
+    document.getElementById('createLocation').value = '';
+    document.getElementById('createConcelho').innerHTML = '<option value="">Selecionar concelho...</option>';
+    removeImagePreview();
+    renderHomeListings();
+  } catch (e) {
+    console.error('submitListing error:', e);
+    showNotification('Erro ao publicar anuncio: ' + e.message, 'error');
+  }
+}
+
+// ACCOUNT
+function renderAccount() {
+  if (!currentUser) return;
+  const p = userProfile || {};
+  document.getElementById('profileName').value = p.name || currentUser.email || '';
+  document.getElementById('profileEmail').value = currentUser.email || '';
+  document.getElementById('profilePhone').value = p.phone || '';
+  renderFilterOptions();
+  document.getElementById('profileLocation').value = p.location || '';
+  document.getElementById('statListings').textContent = '-';
+  document.getElementById('statFavorites').textContent = favorites.length;
+  document.getElementById('statMember').textContent = p.createdAt ? new Date(p.createdAt.seconds * 1000).toLocaleDateString('pt-PT') : '-';
+  renderMyListings();
+  renderFavorites();
+}
+
+function showAccountTab(tab) {
+  document.querySelectorAll('.account-tab').forEach(t => t.classList.add('hide'));
+  document.getElementById('account' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hide');
+  document.querySelectorAll('#pageAccount .tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+  });
+  if (tab === 'mylistings') renderMyListings();
+  if (tab === 'favorites') renderFavorites();
+  if (tab === 'profile') renderFilterOptions();
+}
+
+async function renderMyListings() {
+  try {
+    const g = document.getElementById('myListingsGrid');
+    if (!g || !currentUser) return;
+
+    const snap = await db.collection('listings').where('userId', '==', currentUser.uid).get();
+    const items = [];
+    snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+
+    if (items.length === 0) { g.innerHTML = '<p class="text-gray-400 text-sm">Ainda nao tem anuncios.</p>'; return; }
+    g.innerHTML = items.map(m => {
+      const isFav = favorites.includes(m.id);
+      const cat = CATEGORIES.find(c => c.id === m.category);
+      return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover cursor-pointer">' +
+        '<div class="relative listing-image bg-gray-200">' +
+        '<img src="'+m.image+'" alt="'+m.title+'" class="w-full h-full object-cover" onerror="this.style.display=\'none\'">' +
+        '<button onclick="event.stopPropagation();toggleFavorite('+m.id+')" class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition '+(isFav?'active':'')+'"><i data-lucide="heart" class="w-4 h-4"></i></button>' +
+        (m.deal==='troca'?'<span class="absolute top-3 left-3 bg-amarelo-mostarda text-verde-escuro text-xs font-bold px-2 py-0.5 rounded-full">TROCA</span>':'') +
+        (m.adoptions?'<span class="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">ADOCAO</span>':'') +
+        '</div>' +
+        '<div class="p-4">' +
+        '<h3 class="font-bold text-sm text-verde-escuro mb-1 line-clamp-1">'+m.title+'</h3>' +
+        '<p class="text-xs text-gray-500 mb-1">'+m.breed+' &middot; '+m.age+'</p>' +
+        '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i data-lucide="map-pin" class="w-3 h-3"></i> '+m.location+'</div>' +
+        '<p class="font-bold text-amarelo-escuro text-sm mb-3">'+(m.price===0?'Gratis':m.price+' / '+m.unit)+'</p>' +
+        '<div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">' +
+        '<button onclick="event.stopPropagation(); editListing(\''+m.id+'\')" class="flex-1 text-xs bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition font-medium">Editar</button>' +
+        '<button onclick="event.stopPropagation(); deleteUserListing(\''+m.id+'\')" class="flex-1 text-xs bg-red-50 text-red-500 py-2 rounded-lg hover:bg-red-100 transition font-medium">Eliminar</button>' +
+        '</div>' +
+        '</div></div>';
+    }).join('');
+    lucide.createIcons();
+  } catch (e) {
+    console.error('renderMyListings error:', e);
+  }
+}
+
+function renderFavorites() {
+  const g = document.getElementById('favoritesGrid');
+  if (!g) return;
+  const fav = listings.filter(l => favorites.includes(l.id));
+  if (fav.length === 0) { g.innerHTML = '<p class="text-gray-400 text-sm">Nenhum favorito.</p>'; return; }
+  g.innerHTML = fav.map(l => renderListingCard(l)).join('');
+  lucide.createIcons();
+}
+
+function saveProfile() {
+  if (!currentUser) return;
+  const name = document.getElementById('profileName').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const location = document.getElementById('profileLocation').value;
+  db.collection('users').doc(currentUser.uid).update({name, phone, location})
+    .then(() => {
+      userProfile = {...userProfile, name, phone, location};
+      updateUI();
+      showNotification('Perfil atualizado!');
+    })
+    .catch(e => showNotification('Erro ao atualizar perfil.', 'error'));
+}
+
+// ADMIN
+function showAdminTab(tab) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hide'));
+  document.getElementById(tab).classList.remove('hide');
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+async function renderAdmin() {
+  renderAdminDashboard();
+  // Listings tab
+  const lt = document.getElementById('adminListingsTable');
+  if (lt) {
+    try {
+      const snap = await db.collection('listings').orderBy('createdAt', 'desc').get();
+      const items = [];
+      snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+      if (items.length === 0) {
+        lt.innerHTML = '<tr><td colspan="5" class="px-4 py-3 text-gray-400 text-sm">Nenhum anúncio.</td></tr>';
+      } else {
+        lt.innerHTML = items.map(l =>
+          '<tr class="border-b hover:bg-gray-50">' +
+          '<td class="px-4 py-3 text-sm">' + (l.image ? '<img src="'+l.image+'" class="w-10 h-10 rounded object-cover">' : '-') + '</td>' +
+          '<td class="px-4 py-3 font-medium text-sm">' + l.title + '</td>' +
+          '<td class="px-4 py-3 text-sm">' + (l.category || '') + '</td>' +
+          '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs '+(l.active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')+'">'+(l.active !== false ? 'Ativo' : 'Inativo')+'</span></td>' +
+          '<td class="px-4 py-3">' +
+          '<button onclick="toggleListingActive(\''+l.id+'\')" class="text-xs text-blue-600 hover:underline mr-2">Toggle</button>' +
+          '<button onclick="adminDeleteListing(\''+l.id+'\')" class="text-xs text-red-600 hover:underline">Apagar</button>' +
+          '</td></tr>'
+        ).join('');
+      }
+    } catch(e) { lt.innerHTML = '<tr><td colspan="5" class="px-4 py-3 text-red-500">Erro ao carregar.</td></tr>'; }
+  }
+  // Users tab
+  const ut = document.getElementById('adminUsersTable');
+  if (ut) {
+    try {
+      const snap = await db.collection('users').get();
+      const items = [];
+      snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+      ut.innerHTML = items.map(u =>
+        '<tr class="border-b hover:bg-gray-50">' +
+        '<td class="px-4 py-3 text-sm">' + u.email + '</td>' +
+        '<td class="px-4 py-3 font-medium text-sm">' + (u.name || '') + '</td>' +
+        '<td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs '+(u.role==='admin'?'bg-amarelo-mostarda text-verde-escuro':'bg-gray-100 text-gray-700')+'">'+(u.role||'user')+'</span></td>' +
+        '<td class="px-4 py-3">' +
+        '<button onclick="toggleUserRole(\''+u.id+'\')" class="text-xs text-verde-escuro hover:underline">Toggle Role</button>' +
+        '</td></tr>'
+      ).join('');
+    } catch(e) { ut.innerHTML = '<tr><td colspan="4" class="px-4 py-3 text-red-500">Erro ao carregar.</td></tr>'; }
+  }
+  // Banners tab
+  renderBannerList();
+  lucide.createIcons();
+}
+
+function renderAdminDashboard() {
+  const d = document.getElementById('adminDashboard');
+  if (!d) return;
+  Promise.all([
+    db.collection('listings').get(),
+    db.collection('users').get(),
+    db.collection('reports').get()
+  ]).then(([listingsSnap, usersSnap, reportsSnap]) => {
+    const totalListings = listingsSnap.size;
+    let activeListings = 0;
+    listingsSnap.forEach(doc => { if (doc.data().active !== false) activeListings++; });
+    d.innerHTML = '<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-verde-escuro">'+totalListings+'</p><p class="text-xs text-gray-500 mt-1">Total Anúncios</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-green-600">'+activeListings+'</p><p class="text-xs text-gray-500 mt-1">Ativos</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-amarelo-mostarda">'+usersSnap.size+'</p><p class="text-xs text-gray-500 mt-1">Utilizadores</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-red-500">'+reportsSnap.size+'</p><p class="text-xs text-gray-500 mt-1">Reports</p></div>' +
+      '</div>';
+  }).catch(() => {
+    d.innerHTML = '<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-gray-400">-</p><p class="text-xs text-gray-500 mt-1">Total Anúncios</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-gray-400">-</p><p class="text-xs text-gray-500 mt-1">Ativos</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-gray-400">-</p><p class="text-xs text-gray-500 mt-1">Utilizadores</p></div>' +
+      '<div class="bg-white rounded-xl p-4 shadow-sm text-center border border-gray-100"><p class="text-2xl font-bold text-gray-400">-</p><p class="text-xs text-gray-500 mt-1">Reports</p></div>' +
+      '</div>';
+  });
+}
+
+async function toggleListingActive(id) {
+  try {
+    const doc = await db.collection('listings').doc(id).get();
+    if (doc.exists) {
+      await db.collection('listings').doc(id).update({active: !doc.data().active});
+      showNotification('Anúncio atualizado.');
+      renderAdmin();
+    }
+  } catch(e) { showNotification('Erro.', 'error'); }
+}
+
+async function adminDeleteListing(id) {
+  if (!confirm('Eliminar este anúncio?')) return;
+  try {
+    await db.collection('listings').doc(id).delete();
+    showNotification('Anúncio eliminado.');
+    renderAdmin();
+  } catch(e) { showNotification('Erro.', 'error'); }
+}
+
+async function toggleUserRole(uid) {
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists) {
+      const newRole = doc.data().role === 'admin' ? 'user' : 'admin';
+      await db.collection('users').doc(uid).update({role: newRole});
+      showNotification('Role atualizada para ' + newRole);
+      renderAdmin();
+    }
+  } catch(e) { showNotification('Erro.', 'error'); }
+}
+
+function addBanner() {
+  const title = prompt('Nome do banner:');
+  if (!title) return;
+  const url = prompt('URL de destino:');
+  db.collection('banners').add({title, url: url || '#', active: true, createdAt: firebase.firestore.FieldValue.serverTimestamp()})
+    .then(() => { renderAdmin(); showNotification('Banner adicionado!'); })
+    .catch(e => showNotification('Erro ao adicionar banner.', 'error'));
+}
+function toggleBanner(id) {
+  db.collection('banners').doc(id).get().then(doc => {
+    if (doc.exists) {
+      db.collection('banners').doc(id).update({active: !doc.data().active}).then(() => renderAdmin());
+    }
+  });
+}
+function deleteBanner(id) {
+  if (!confirm('Eliminar banner?')) return;
+  db.collection('banners').doc(id).delete().then(() => renderAdmin());
+}
+function savePages() {
+  const about = document.getElementById('pageAbout')?.value || '';
+  const terms = document.getElementById('pageTerms')?.value || '';
+  const privacy = document.getElementById('pagePrivacy')?.value || '';
+  localStorage.setItem('aq_pages', JSON.stringify({about, terms, privacy}));
+  showNotification('Paginas guardadas!');
+}
+
+function renderBannerList() {
+  const bl = document.getElementById('bannerList');
+  if (!bl) return;
+  db.collection('banners').get().then(snap => {
+    const items = [];
+    snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+    if (items.length === 0) {
+      bl.innerHTML = '<p class="text-gray-400 text-sm">Nenhum banner criado.</p>';
+    } else {
+      bl.innerHTML = items.map(b => '<div class="border rounded-lg p-3 flex justify-between items-center">' +
+        '<div><span class="text-sm font-medium">' + b.title + '</span><p class="text-xs text-gray-400">' + b.url + '</p></div>' +
+        '<div class="flex gap-2">' +
+        '<button onclick="toggleBanner(\'' + b.id + '\')" class="text-xs ' + (b.active ? 'text-green-600' : 'text-gray-400') + ' hover:underline">' + (b.active ? 'Ativo' : 'Inativo') + '</button>' +
+        '<button onclick="deleteBanner(\'' + b.id + '\')" class="text-xs text-red-600 hover:underline">Apagar</button>' +
+        '</div></div>').join('');
+    }
+  }).catch(() => {
+    bl.innerHTML = '<p class="text-red-500 text-sm">Erro ao carregar banners.</p>';
+  });
+}
+
+// SEEKING
+async function renderSeeking() {
+  try {
+    const g = document.getElementById('seekingListings');
+    if (!g) return;
+
+    const snap = await db.collection('seekings').where('active', '==', true).get();
+    seekListings = [];
+    snap.forEach(doc => seekListings.push({ id: doc.id, ...doc.data() }));
+
+    if (seekListings.length === 0) {
+      g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhum pedido de procura ativo.</div>';
+    } else {
+      g.innerHTML = seekListings.map(s => renderSeekCard(s)).join('');
+    }
+    lucide.createIcons();
+  } catch (e) {
+    console.error('renderSeeking error:', e);
+  }
+}
+function applySeekFilters() {
+  const search = (document.getElementById('seekFilterSearch')?.value || '').toLowerCase();
+  const cat = document.getElementById('seekFilterCategory')?.value || '';
+  const loc = document.getElementById('seekFilterLocation')?.value || '';
+  const g = document.getElementById('seekingListings');
+  if (!g) return;
+  let active = seekListings.filter(l => l.active);
+  if (search) active = active.filter(l => l.desc.toLowerCase().includes(search) || (l.breed && l.breed.toLowerCase().includes(search)));
+  if (cat) active = active.filter(l => l.category === cat);
+  if (loc) active = active.filter(l => l.location === loc);
+  if (active.length === 0) {
+    g.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Nenhum pedido encontrado.</div>';
+  } else {
+    g.innerHTML = active.map(s => renderSeekCard(s)).join('');
+  }
+  lucide.createIcons();
+}
+
+function renderSeekCard(s) {
+  const cat = CATEGORIES.find(c => c.id === s.category);
+  return '<div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover border-l-4 border-amarelo-mostarda">' +
+    '<div class="p-4">' +
+    '<div class="flex items-center gap-2 mb-2">' +
+    '<span class="text-2xl">'+(cat?cat.emoji:'🔍')+'</span>' +
+    '<span class="bg-amarelo-mostarda text-verde-escuro text-xs font-bold px-2 py-0.5 rounded-full">PROCURO</span>' +
+    '</div>' +
+    '<h3 class="font-bold text-sm text-verde-escuro mb-1">'+(cat?cat.name:s.category)+'</h3>' +
+    '<p class="text-xs text-gray-500 mb-1">'+(s.breed?'Raça: '+s.breed:'Qualquer raça')+' &middot; '+s.age+'</p>' +
+    '<div class="flex items-center gap-1 text-xs text-gray-400 mb-2"><i data-lucide="map-pin" class="w-3 h-3"></i> '+s.location+'</div>' +
+    '<p class="text-sm text-gray-600 mb-3 line-clamp-2">'+s.desc+'</p>' +
+    (s.price>0?'<p class="text-xs text-gray-400 mb-3">Ate '+s.price+' &euro;</p>':'') +
+    '<div class="flex items-center gap-2 mb-3">' +
+    '<div class="w-7 h-7 bg-amarelo-mostarda rounded-full flex items-center justify-center text-verde-escuro font-bold text-xs">'+s.userName.charAt(0)+'</div>' +
+    '<span class="text-xs text-gray-500">'+s.userName+'</span>' +
+    '</div>' +
+    '<a href="tel:'+s.userPhone+'" class="w-full btn-green py-2 rounded-lg text-xs flex items-center justify-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i> Contactar</a>' +
+    '</div></div>';
+}
+
+function seekWizardNext(step) {
+  if (step === 1) {
+    const cat = document.getElementById('seekCategory').value;
+    if (!cat) { showNotification('Selecione a categoria do animal.', 'error'); return; }
+  }
+  if (step === 2) {
+    updateSeekSummary();
+  }
+  document.getElementById('seekWizard'+step).classList.remove('active');
+  document.getElementById('seekWizard'+(step+1)).classList.add('active');
+}
+
+function seekWizardPrev(step) {
+  document.getElementById('seekWizard'+step).classList.remove('active');
+  document.getElementById('seekWizard'+(step-1)).classList.add('active');
+}
+
+function updateSeekSummary() {
+  const s = document.getElementById('seekSummary');
+  const cat = CATEGORIES.find(c => c.id === document.getElementById('seekCategory').value);
+  s.innerHTML =
+    '<p><strong>Animal:</strong> '+(cat?cat.name:'-')+'</p>' +
+    '<p><strong>Raca:</strong> '+(document.getElementById('seekBreed').value||'Qualquer')+'</p>' +
+    '<p><strong>Idade:</strong> '+(document.getElementById('seekAge').value||'Qualquer')+'</p>' +
+    '<p><strong>Localizacao:</strong> '+document.getElementById('seekLocation').value+'</p>' +
+    '<p><strong>Orcamento:</strong> '+(document.getElementById('seekPrice').value?document.getElementById('seekPrice').value+' €':'Sem limite')+'</p>';
+}
+
+async function submitSeek() {
+  try {
+    const location = document.getElementById('seekLocation').value;
+    if (!location) { showNotification('Selecione a localizacao.', 'error'); return; }
+    const cat = document.getElementById('seekCategory').value;
+
+    await db.collection('seekings').add({
+      category: cat,
+      breed: document.getElementById('seekBreed').value.trim() || 'Qualquer',
+      age: document.getElementById('seekAge').value.trim() || 'Qualquer',
+      desc: document.getElementById('seekDesc').value.trim(),
+      location: location,
+      price: parseFloat(document.getElementById('seekPrice').value) || 0,
+      userId: currentUser.uid,
+      userName: userProfile ? userProfile.name : currentUser.email,
+      userPhone: userProfile ? (userProfile.phone || '') : '',
+      active: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    closeModal('seekModal');
+    showNotification('Pedido de procura publicado!');
+    document.querySelectorAll('#seekModal .wizard-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('seekWizard1').classList.add('active');
+    ['seekBreed','seekAge','seekDesc','seekPrice'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('seekCategory').value = '';
+    renderSeeking();
+  } catch (e) {
+    console.error('submitSeek error:', e);
+    showNotification('Erro ao publicar pedido: ' + e.message, 'error');
+  }
+}
+
+// IMAGE UPLOAD
+let uploadedImageData = null;
+
+function previewImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('imagePreview').classList.remove('hidden');
+      document.getElementById('imageUploadArea').classList.add('hidden');
+      uploadedImageData = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeImagePreview() {
+  document.getElementById('imagePreview').classList.add('hidden');
+  document.getElementById('imageUploadArea').classList.remove('hidden');
+  document.getElementById('createImageFile').value = '';
+  uploadedImageData = null;
+}
+
+async function createAdminUser() {
+  try {
+    const cred = await auth.createUserWithEmailAndPassword('admin@aquintinha.pt', 'admin123');
+    await db.collection('users').doc(cred.user.uid).set({
+      name: 'Admin Quintinha', email: 'admin@aquintinha.pt',
+      role: 'admin', status: 'active',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showNotification('Admin criado! Faça login.');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') showNotification('Admin já existe. Faça login com admin@aquintinha.pt / admin123');
+    else showNotification('Erro: ' + e.message, 'error');
+  }
+}
+
+
+async function deleteUserListing(id) {
+  if (!confirm('Eliminar este anúncio?')) return;
+  try {
+    await db.collection('listings').doc(id).delete();
+    showNotification('Anúncio eliminado.');
+    renderMyListings();
+    renderHomeListings();
+  } catch(e) { showNotification('Erro.', 'error'); }
+}
+function editListing(id) {
+  const l = listings.find(x => x.id === id);
+  if (!l) return;
+  editingListingId = id;
+  document.getElementById('createCategory').value = l.category;
+  document.getElementById('createTitle').value = l.title;
+  document.getElementById('createDesc').value = l.desc;
+  document.getElementById('createBreed').value = l.breed;
+  document.getElementById('createAge').value = l.age;
+  document.getElementById('createPrice').value = l.price;
+  document.getElementById('createImage').value = l.image.startsWith('data:') ? '' : l.image;
+  openModal('createModal');
+}
+function changePassword() {
+  const current = document.getElementById('currentPassword').value;
+  const newP = document.getElementById('newPassword').value;
+  const conf = document.getElementById('confirmPassword').value;
+  if (!current || !newP) { showNotification('Preencha todos os campos.', 'error'); return; }
+  if (newP !== conf) { showNotification('Passwords nao coincidem.', 'error'); return; }
+  if (newP.length < 4) { showNotification('Minimo 4 caracteres.', 'error'); return; }
+  const cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, current);
+  currentUser.reauthenticateWithCredential(cred).then(() => {
+    return currentUser.updatePassword(newP);
+  }).then(() => {
+    ['currentPassword','newPassword','confirmPassword'].forEach(id => document.getElementById(id).value = '');
+    showNotification('Password alterada!');
+  }).catch(e => {
+    showNotification('Erro: password atual incorreta.', 'error');
+  });
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', function() {
+  renderCategories();
+  renderFilterOptions();
+  lucide.createIcons();
+
+  // Firebase auth state listener
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUser = user;
+      // Load user profile from Firestore
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          userProfile = doc.data();
+        } else {
+          userProfile = { name: user.email, email: user.email, role: 'user' };
+        }
+      } catch(e) {
+        userProfile = { name: user.email, email: user.email, role: 'user' };
+      }
+      updateUI();
+      renderHomeListings();
+      renderSeeking();
+    } else {
+      currentUser = null;
+      userProfile = null;
+      updateUI();
+      renderHomeListings();
+      renderSeeking();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#userMenuBtn') && !e.target.closest('#userDropdown')) {
+      document.getElementById('userDropdown')?.classList.add('hide');
+    }
+  });
+
+  const uploadArea = document.getElementById('imageUploadArea');
+  if (uploadArea) {
+    uploadArea.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('border-amarelo-mostarda'); });
+    uploadArea.addEventListener('dragleave', function(e) { e.preventDefault(); this.classList.remove('border-amarelo-mostarda'); });
+    uploadArea.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('border-amarelo-mostarda');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        document.getElementById('createImageFile').files = e.dataTransfer.files;
+        previewImage(document.getElementById('createImageFile'));
+      }
+    });
+  }
+  const savedPages = JSON.parse(localStorage.getItem('aq_pages') || '{}');
+  if (savedPages.about) { const el = document.getElementById('pageAbout'); if(el) el.value = savedPages.about; }
+  if (savedPages.terms) { const el = document.getElementById('pageTerms'); if(el) el.value = savedPages.terms; }
+  if (savedPages.privacy) { const el = document.getElementById('pagePrivacy'); if(el) el.value = savedPages.privacy; }
+});
+</script>
+</body>
+</html>
